@@ -1,0 +1,1366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="color-scheme" content="light">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Bible Color Quest</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#E4ECF7; --tile:#D8E2F2; --surface:#FFFFFF; --surface2:#F1F5FB; --ink:#1A2444; --muted:#56617F;
+  --accent:#E8AA22; --accent-ink:#1A2444; --accent-strong:#8A5D00; --ok:#1F7A4A; --warn:#B4432F;
+  --lapis:#2F4FA8; --shadow:0 10px 30px rgba(26,36,68,.12), 0 2px 6px rgba(26,36,68,.08);
+  --art-ink:#1F2A4A;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  color-scheme:light;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{
+  margin:0; color:var(--ink); font-family:Nunito,"Segoe UI",system-ui,sans-serif; font-weight:600;
+  background-color:var(--bg);
+  background-image:
+    repeating-linear-gradient(0deg, transparent 0 46px, var(--tile) 46px 48px),
+    repeating-linear-gradient(90deg, transparent 0 94px, var(--tile) 94px 96px);
+}
+h1,h2,h3{font-family:"Baloo 2","Trebuchet MS",sans-serif; line-height:1.08; margin:0}
+button{font:inherit; color:inherit; cursor:pointer}
+button:disabled{cursor:not-allowed; opacity:.45}
+:focus-visible{outline:3px solid var(--accent); outline-offset:3px}
+[hidden]{display:none !important}
+
+.wrap{max-width:1120px; margin:0 auto; padding:18px 16px 32px}
+
+.btn{display:inline-flex; align-items:center; justify-content:center; gap:8px; border:0; border-radius:999px; padding:13px 24px;
+  font-weight:800; font-size:1.05rem; background:linear-gradient(180deg,#FFD66B,var(--accent)); color:var(--accent-ink);
+  box-shadow:0 4px 0 #A9750B, 0 8px 18px rgba(169,117,11,.25); transition:transform .1s, box-shadow .1s}
+.btn:active:not(:disabled){transform:translateY(3px); box-shadow:0 1px 0 #A9750B}
+.btn.ghost{background:var(--surface2); color:var(--ink); box-shadow:inset 0 0 0 2px var(--tile)}
+.btn.ghost:active{transform:translateY(1px)}
+
+/* ---------- home ---------- */
+.hero{display:grid; grid-template-columns:1fr auto; align-items:end; gap:16px; padding:18px 4px 22px}
+.hero h1{font-size:clamp(2.4rem,7vw,4.2rem); font-weight:800; letter-spacing:-.02em}
+.hero p{margin:6px 0 0; color:var(--muted); font-size:1.12rem; max-width:46ch}
+.hero .mark{width:clamp(70px,14vw,120px); height:auto}
+.levels{display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:18px}
+.lvl{display:flex; flex-direction:column; text-align:left; border:0; padding:0; border-radius:26px; background:var(--surface);
+  box-shadow:var(--shadow); overflow:hidden; transition:transform .15s}
+.lvl:hover{transform:translateY(-3px)}
+.lvl .thumb{background:#FFFFFF; height:190px; display:grid; place-items:center; padding:14px; border-bottom:1px solid var(--tile)}
+.lvl .thumb svg{max-height:100%; width:100%; height:100%}
+.lvl .meta{padding:14px 18px 18px}
+.lvl h2{font-size:1.45rem}
+.lvl p{margin:4px 0 10px; color:var(--muted); font-size:.98rem}
+.stars{color:var(--accent-strong); font-size:1.15rem; letter-spacing:2px}
+.stars .off{color:var(--tile)}
+.thumb.drawthumb{background:linear-gradient(135deg,#FFF6DA,#FFFFFF)}
+.mini-crayons{display:flex; gap:8px; align-items:flex-end; height:120px}
+.mini-crayons span{width:20px; border-radius:4px 4px 3px 3px; background:var(--c); height:var(--h); position:relative; box-shadow:inset -4px 0 0 rgba(0,0,0,.12)}
+.mini-crayons span::before{content:""; position:absolute; left:0; right:0; top:-14px; height:14px; background:var(--c); clip-path:polygon(50% 0,100% 100%,0 100%)}
+
+/* ---------- level ---------- */
+.topbar{display:flex; align-items:center; gap:12px; margin-bottom:14px}
+.back{display:inline-flex; align-items:center; gap:6px; border:0; background:var(--surface); border-radius:999px; padding:9px 16px 9px 12px; font-weight:800; box-shadow:var(--shadow)}
+.topbar h1{font-size:clamp(1.4rem,4vw,2rem); flex:1}
+.dots{display:flex; gap:6px}
+.dots i{width:12px; height:12px; border-radius:50%; background:var(--tile); display:block}
+.dots i.done{background:var(--accent)}
+.dots i.now{background:var(--lapis)}
+
+.game{display:grid; grid-template-columns:minmax(0,1.3fr) minmax(0,1fr); gap:18px; align-items:start}
+@media (max-width:860px){.game{grid-template-columns:1fr}}
+
+.page{background:#FFFFFF; border-radius:26px; box-shadow:var(--shadow); padding:10px; position:relative; overflow:hidden}
+.page svg{display:block; width:100%; height:min(64vh,620px); touch-action:none; user-select:none; -webkit-user-select:none}
+@media (max-width:860px){.page svg{height:min(52vh,520px)}}
+.page.brush svg{cursor:crosshair}
+
+.toolbar{margin-top:12px; background:var(--surface); border-radius:22px; box-shadow:var(--shadow); padding:12px 14px 10px}
+@media (max-width:860px){.toolbar{position:sticky; bottom:0; z-index:5; margin-bottom:max(8px,env(safe-area-inset-bottom,0px))}}
+.toolrow{display:flex; align-items:center; gap:8px; flex-wrap:wrap}
+.tool{display:inline-flex; align-items:center; gap:6px; border:0; border-radius:14px; padding:9px 13px; background:var(--surface2); font-weight:800}
+.tool svg{width:20px; height:20px}
+.tool[aria-pressed="true"]{background:var(--lapis); color:#FFFFFF}
+.sizes{display:flex; gap:4px; padding:4px; background:var(--surface2); border-radius:14px}
+.size{width:36px; height:36px; border:0; border-radius:10px; background:transparent; display:grid; place-items:center}
+.size i{display:block; border-radius:50%; background:var(--ink)}
+.size[aria-pressed="true"]{background:var(--surface)}
+.toolrow .spacer{flex:1}
+
+.tray{display:flex; gap:6px; overflow-x:auto; padding:22px 6px 4px; margin-top:6px; scrollbar-width:thin;
+  background:linear-gradient(180deg,transparent 0 50%, var(--surface2) 50%); border-radius:0 0 16px 16px}
+.crayon{flex:none; width:34px; height:86px; border:0; padding:0; background:none; position:relative; transition:transform .15s}
+.crayon .tip{position:absolute; left:6px; right:6px; top:0; height:18px; background:var(--sw); clip-path:polygon(50% 0,100% 100%,0 100%)}
+.crayon .body{position:absolute; left:3px; right:3px; top:17px; bottom:0; border-radius:5px 5px 6px 6px; background:var(--sw);
+  box-shadow:inset -6px 0 0 rgba(0,0,0,.12), inset 0 -2px 0 rgba(0,0,0,.08)}
+.crayon .body::after{content:""; position:absolute; left:0; right:0; top:16px; height:18px; background:rgba(255,255,255,.28); border-top:2px solid rgba(0,0,0,.12); border-bottom:2px solid rgba(0,0,0,.12)}
+.crayon.light .body{box-shadow:inset 0 0 0 1.5px #C9D1E0, inset -6px 0 0 rgba(0,0,0,.06)}
+.crayon[aria-pressed="true"]{transform:translateY(-18px)}
+.tray.dump .crayon{animation:drop .55s cubic-bezier(.3,1.4,.6,1) backwards; animation-delay:calc(var(--i) * 35ms)}
+@keyframes drop{from{transform:translateY(-130px) rotate(-35deg); opacity:0}}
+.colorname{font-size:.9rem; color:var(--muted); font-weight:800}
+
+.side{display:flex; flex-direction:column; gap:16px}
+.card{background:var(--surface); border-radius:24px; box-shadow:var(--shadow); padding:20px 22px}
+.card h2{font-size:1.55rem; margin-bottom:6px}
+.eyebrow{color:var(--lapis); font-weight:800; margin:0 0 4px}
+.card .txt{margin:0; font-size:1.06rem; line-height:1.55; max-width:58ch}
+.card .ref{display:block; margin-top:8px; color:var(--muted); font-weight:800; font-size:.92rem}
+.card .hint{margin:10px 0 0; padding:10px 14px; border-radius:14px; background:var(--surface2); font-weight:700}
+.card .actions{margin-top:16px; display:flex; gap:10px; flex-wrap:wrap}
+
+.plist{list-style:none; margin:10px 0 0; padding:0; display:grid; gap:7px}
+.plist li{display:flex; align-items:center; gap:10px; padding:8px 12px; border-radius:14px; background:var(--surface2); font-weight:800}
+.plist .n{flex:none; width:28px; height:28px; border-radius:50%; display:grid; place-items:center; background:var(--surface); font-size:.9rem}
+.plist li.done .n{background:var(--accent); color:var(--accent-ink)}
+.plist li.now{box-shadow:inset 0 0 0 2px var(--lapis)}
+.plist .nm{color:var(--muted)}
+.plist li.done .nm{color:var(--ink)}
+
+/* svg art */
+.fs{fill:#FFFFFF; transition:fill .25s}
+.part.locked .fs{fill:#EDF1F7}
+.ol{fill:none; stroke:var(--art-ink); stroke-width:2.4; stroke-linejoin:round; stroke-linecap:round; vector-effect:non-scaling-stroke}
+.lines,.strokes,.badge{pointer-events:none}
+.deco{fill:var(--art-ink); stroke:none}
+.deco-line{fill:none; stroke:var(--art-ink); stroke-width:1.6; stroke-linecap:round; opacity:.55; vector-effect:non-scaling-stroke}
+.part.locked .lines{opacity:.45}
+.part.asking{cursor:pointer}
+.part.asking .ol{stroke:#D99A10; stroke-width:4.5; animation:glow 1.3s ease-in-out infinite}
+@keyframes glow{50%{stroke-opacity:.35}}
+.badge circle{fill:#F2C14E; stroke:var(--art-ink); stroke-width:2; vector-effect:non-scaling-stroke}
+.badge text{font-family:"Baloo 2",sans-serif; font-weight:800; fill:#1A2444; text-anchor:middle; dominant-baseline:central}
+.badge{transition:opacity .3s}
+.part.done .badge,.part.coloring .badge{opacity:0}
+.maplabel{font:800 9px Nunito,sans-serif; fill:#7A6748; text-anchor:middle}
+#statue.shake{animation:shake .45s linear 2}
+@keyframes shake{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+#statue{transition:opacity 1.2s}
+#stoneWrap{transition:transform 1.1s cubic-bezier(.5,0,.8,.4), opacity .6s}
+#mountain{transform-box:view-box; transform-origin:150px 580px; transform:scale(0); transition:transform 1.6s cubic-bezier(.2,.8,.2,1)}
+#mountain.grow{transform:scale(1)}
+
+/* dialog + overlays */
+dialog{border:0; border-radius:28px; background:var(--surface); color:var(--ink); padding:24px; width:min(500px,calc(100% - 28px)); box-shadow:var(--shadow)}
+dialog::backdrop{background:rgba(10,18,40,.55)}
+dialog h2{font-size:1.25rem; color:var(--lapis); margin-bottom:6px}
+dialog .q{font-family:"Baloo 2",sans-serif; font-size:1.45rem; font-weight:700; line-height:1.25; margin:0 0 16px}
+.opts{display:grid; gap:10px}
+.opt{text-align:left; padding:15px 18px; border-radius:18px; border:0; background:var(--surface2); font-weight:800; font-size:1.04rem; box-shadow:inset 0 0 0 2px var(--tile)}
+.opt.wrong{box-shadow:inset 0 0 0 3px var(--warn); animation:nope .35s}
+.opt.right{background:var(--ok); color:#FFFFFF; box-shadow:none}
+@keyframes nope{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.feedback{min-height:1.4em; margin:14px 0 0; font-weight:800}
+.feedback.warn{color:var(--warn)} .feedback.ok{color:var(--ok)}
+
+.overlay{position:fixed; inset:0; background:rgba(10,18,40,.6); display:grid; place-items:center; padding:16px; z-index:30}
+.overlay .card{max-width:540px; width:100%}
+.overlay h2{font-size:clamp(1.8rem,5vw,2.4rem); margin-bottom:10px}
+.overlay .txt{margin-bottom:12px}
+blockquote{margin:4px 0 16px; padding:14px 18px; border-left:6px solid var(--accent); background:var(--surface2); border-radius:0 14px 14px 0; font-style:italic; line-height:1.5}
+blockquote b{display:block; font-style:normal; margin-top:6px}
+.bigstars{font-size:2.4rem; letter-spacing:6px; color:var(--accent-strong); margin:4px 0 8px}
+.bigstars .off{color:var(--tile)}
+
+.toast{position:fixed; left:50%; bottom:calc(24px + env(safe-area-inset-bottom,0px)); transform:translateX(-50%) translateY(20px); opacity:0;
+  background:var(--ink); color:var(--surface); padding:12px 18px; border-radius:999px; font-weight:800; transition:.25s; z-index:40; pointer-events:none; max-width:calc(100% - 32px); text-align:center}
+.toast.show{opacity:1; transform:translateX(-50%) translateY(0)}
+
+/* draw mode */
+.drawgrid{display:grid; grid-template-columns:minmax(0,1.4fr) minmax(0,1fr); gap:18px; align-items:start}
+@media (max-width:860px){.drawgrid{grid-template-columns:1fr}}
+.canvasbox{background:#FFFFFF; border-radius:26px; box-shadow:var(--shadow); overflow:hidden; height:min(62vh,600px)}
+@media (max-width:860px){.canvasbox{height:52vh}}
+#pad{display:block; width:100%; height:100%; touch-action:none; cursor:crosshair}
+.secret{border:0; width:100%; text-align:center; padding:22px 16px; border-radius:20px; background:var(--lapis); color:#FFFFFF; font-family:"Baloo 2",sans-serif; font-size:1.6rem; font-weight:800; line-height:1.15}
+.secret.hidden-word{background:var(--surface2); color:var(--ink); font-size:1.15rem}
+.timer{font-family:"Baloo 2",sans-serif; font-size:3rem; font-weight:800; text-align:center; margin:10px 0 0}
+.timer.low{color:var(--warn)}
+.score{text-align:center; color:var(--muted); font-weight:800}
+
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none !important; transition:none !important}}
+
+/* ---------- v3 additions ---------- */
+.iconbtn{display:inline-flex; align-items:center; gap:6px; border:0; background:var(--surface); border-radius:999px; padding:9px 14px; font-weight:800; box-shadow:var(--shadow)}
+.herotools{display:flex; flex-direction:column; align-items:flex-end; gap:10px}
+.pointsbadge{background:var(--surface); border-radius:999px; padding:8px 16px; font-weight:800; box-shadow:var(--shadow)}
+.shelf{margin-top:28px}
+.shelf h2{font-size:1.6rem; margin-bottom:12px}
+.trophies{display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:12px}
+.trophy{background:var(--surface); border-radius:20px; padding:14px; text-align:center; box-shadow:var(--shadow)}
+.trophy .ic{font-size:2.4rem; line-height:1.1}
+.trophy b{display:block; margin-top:6px; font-family:"Baloo 2",sans-serif; font-size:1.05rem}
+.trophy small{display:block; color:var(--muted); font-size:.85rem; margin-top:2px}
+.trophy.locked .ic{filter:grayscale(1) brightness(.6); opacity:.35}
+.trophy.locked b{color:var(--muted)}
+.stickerbook{display:flex; flex-wrap:wrap; gap:8px; margin-top:10px}
+.stickerbook span{font-size:1.6rem; width:46px; height:46px; display:grid; place-items:center; border-radius:14px; background:var(--surface)}
+.stickerbook span.off{filter:grayscale(1); opacity:.25}
+
+.stage{display:inline-block; background:var(--lapis); color:#FFFFFF; border-radius:999px; padding:4px 12px; font-weight:800; font-size:.9rem; margin-bottom:8px}
+.prog{margin-top:14px; height:16px; border-radius:999px; background:var(--surface2); overflow:hidden; box-shadow:inset 0 0 0 2px var(--tile)}
+.prog i{display:block; height:100%; width:0; background:linear-gradient(90deg,#7DD3A0,#1F9D5B); border-radius:999px; transition:width .15s}
+.progtxt{margin:6px 0 0; font-weight:800; color:var(--muted)}
+.bigtimer{font-family:"Baloo 2",sans-serif; font-size:3.2rem; font-weight:800; line-height:1; margin-top:10px}
+.bigtimer.low{color:var(--warn)}
+
+.opt{display:flex; align-items:center; gap:12px}
+.opt .letter{flex:none; width:32px; height:32px; border-radius:50%; display:grid; place-items:center; background:var(--surface); font-family:"Baloo 2",sans-serif; font-weight:800}
+.opt.right .letter{background:#FFFFFF; color:var(--ok)}
+.qhead{display:flex; align-items:center; justify-content:space-between; gap:10px}
+.hear{border:0; background:var(--surface2); border-radius:999px; padding:7px 12px; font-weight:800}
+.qtimer{height:10px; border-radius:999px; background:var(--surface2); overflow:hidden; margin:0 0 14px}
+.qtimer i{display:block; height:100%; width:100%; background:var(--accent); transform-origin:left}
+
+.crayon.nudge{animation:nudge .5s ease-in-out 3}
+@keyframes nudge{25%{transform:translateY(-22px) rotate(-8deg)}75%{transform:translateY(-22px) rotate(8deg)}}
+
+.prize{position:fixed; inset:0; z-index:50; display:grid; place-items:center; padding:16px; background:rgba(10,18,40,.55); overflow:hidden}
+.prize .card{text-align:center; max-width:420px; width:100%; animation:popin .45s cubic-bezier(.3,1.5,.6,1)}
+@keyframes popin{from{transform:scale(.6); opacity:0}}
+.prize .ic{font-size:5rem; line-height:1.1; display:inline-block; animation:bob 1.6s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-8px) rotate(4deg)}}
+.prize h2{font-size:1.8rem; margin:6px 0}
+.prize .pts{font-family:"Baloo 2",sans-serif; font-size:1.4rem; font-weight:800; color:var(--accent-strong)}
+.confetti{position:absolute; top:-20px; width:10px; height:16px; border-radius:2px; animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(110vh) rotate(720deg)}}
+
+.partybar{display:flex; gap:8px; flex-wrap:wrap}
+.pchip{display:flex; align-items:center; gap:8px; background:var(--surface); border-radius:999px; padding:6px 14px 6px 6px; font-weight:800; box-shadow:var(--shadow)}
+.pchip i{width:26px; height:26px; border-radius:50%; background:var(--pc); display:block}
+.pchip.now{outline:3px solid var(--pc)}
+.setup{max-width:620px; margin:0 auto}
+.players{display:grid; gap:10px; margin:14px 0 18px}
+.players label{display:flex; align-items:center; gap:10px; font-weight:800}
+.players i{width:30px; height:30px; border-radius:50%; background:var(--pc); flex:none}
+.players input{flex:1; font:inherit; font-size:1.05rem; padding:12px 14px; border-radius:14px; border:2px solid var(--tile); background:var(--surface2); color:var(--ink)}
+.history{list-style:none; padding:0; margin:10px 0 0; display:grid; gap:8px}
+.history li{background:var(--surface2); border-radius:14px; padding:10px 14px; font-weight:700}
+.podium{list-style:none; padding:0; margin:12px 0 16px; display:grid; gap:8px; text-align:left}
+.podium li{display:flex; align-items:center; gap:12px; background:var(--surface2); border-radius:16px; padding:10px 14px; font-weight:800; font-size:1.1rem}
+.podium li span:last-child{margin-left:auto}
+.podium .medal{font-size:1.6rem}
+
+/* ---------- prophecy timeline ---------- */
+.tl-top{display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:14px}
+.tl-top p{margin:0; color:var(--muted); font-weight:800; font-size:1.05rem}
+.tl-grid{display:grid; gap:12px}
+.tl-head,.tl-row{display:grid; grid-template-columns:minmax(0,1fr) minmax(104px,.8fr) minmax(0,1fr); gap:12px; align-items:center}
+.tl-head{font-family:"Baloo 2",sans-serif; font-weight:800; font-size:1.1rem; text-align:center; color:var(--lapis)}
+.tl-row{background:var(--surface); border-radius:24px; padding:10px; box-shadow:var(--shadow); animation:rise .5s backwards; animation-delay:calc(var(--i) * 110ms); transition:transform .25s, box-shadow .25s}
+@keyframes rise{from{transform:translateY(24px); opacity:0}}
+.tl-row.matched{box-shadow:inset 0 0 0 3px var(--accent), var(--shadow)}
+.tl-row.playing{transform:scale(1.025); box-shadow:inset 0 0 0 4px var(--lapis), var(--shadow)}
+.tl-art{position:relative; background:#FFFFFF; border-radius:18px; height:128px; padding:6px; box-shadow:inset 0 0 0 2px var(--tile)}
+.tl-art svg{display:block; width:100%; height:100%}
+.tl-art.locked svg{opacity:.3}
+.tl-art .lock{position:absolute; left:6px; right:6px; bottom:6px; text-align:center; font-size:.8rem; font-weight:800; color:var(--muted); background:rgba(255,255,255,.9); border-radius:10px; padding:3px}
+.tl-art .cap{position:absolute; left:8px; top:6px; font-size:.78rem; font-weight:800; color:var(--muted)}
+.tfill > *{fill:#FFFFFF}
+.tl-art.locked .tfill > *{fill:#EDF1F7}
+.tlines > *:not(.deco):not(.deco-line){fill:none; stroke:var(--art-ink); stroke-width:2; stroke-linejoin:round; vector-effect:non-scaling-stroke}
+.tl-mid{text-align:center}
+.tl-mid b{display:block; font-family:"Baloo 2",sans-serif; font-size:clamp(1.05rem,3vw,1.4rem); line-height:1.1}
+.tl-mid small{display:block; color:var(--muted); font-weight:800; margin-top:2px}
+.tl-mid .same{display:inline-block; margin-top:6px; padding:3px 10px; border-radius:999px; font-size:.8rem; font-weight:800; background:var(--surface2); color:var(--muted)}
+.tl-row.matched .same{background:var(--accent); color:var(--accent-ink)}
+@media (max-width:560px){ .tl-art{height:96px} .tl-head{font-size:.9rem} .tl-head,.tl-row{gap:6px} .tl-row{padding:8px} }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <linearGradient id="mGold" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFEBA3"/><stop offset=".5" stop-color="#E2A72E"/><stop offset="1" stop-color="#A86F12"/></linearGradient>
+    <linearGradient id="gMount" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#A6C98F"/><stop offset="1" stop-color="#4F7A45"/></linearGradient>
+  </defs>
+</svg>
+
+<!-- HOME -->
+<main id="home" class="wrap">
+  <section class="hero">
+    <div>
+      <h1>Bible Color Quest</h1>
+      <p><strong style="color:var(--ink);font-size:1.25rem">Don’t just color the Bible. Unlock it.</strong><br>Answer a question, grab your crayons, and color your way through Daniel’s dreams and God’s sanctuary.</p>
+    </div>
+    <div class="herotools">
+      <button class="iconbtn soundBtn"></button>
+      <span class="pointsbadge" id="pointsBadge"></span>
+    </div>
+  </section>
+  <div class="levels" id="levelCards"></div>
+  <section class="shelf">
+    <h2>Your trophies</h2>
+    <div class="trophies" id="trophyShelf"></div>
+    <h2 style="margin-top:22px">Sticker book</h2>
+    <div class="stickerbook" id="stickerBook"></div>
+  </section>
+</main>
+
+<!-- PARTY SETUP -->
+<main id="partySetup" class="wrap" hidden>
+  <div class="topbar">
+    <button class="back backHome"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>Levels</button>
+    <h1>Party race: Daniel 2</h1>
+  </div>
+  <div class="setup">
+    <div class="card">
+      <h2>Who’s playing?</h2>
+      <p class="txt">Two to four players share this device. On your turn you get 5 seconds to answer after the question is read, then 10 seconds to color your part of the statue. Fast answers and neat coloring score the most points.</p>
+      <div class="players" id="playerInputs"></div>
+      <button class="btn" id="partyStart">Start the race</button>
+    </div>
+    <div class="card" style="margin-top:16px">
+      <h3 style="font-size:1.2rem">Past races</h3>
+      <ul class="history" id="history"></ul>
+    </div>
+  </div>
+</main>
+
+<!-- LEVEL -->
+<main id="level" class="wrap" hidden>
+  <div class="topbar">
+    <button class="back" id="backBtn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>Levels</button>
+    <h1 id="lvlTitle"></h1>
+    <button class="iconbtn soundBtn"></button>
+  </div>
+  <div class="partybar" id="partyBar" hidden style="margin-bottom:12px"></div>
+  <div class="game">
+    <div>
+      <div class="page" id="page"><svg id="art" xmlns="http://www.w3.org/2000/svg"></svg></div>
+      <div class="toolbar" id="toolbar" hidden>
+        <div class="toolrow">
+          <div class="sizes" id="sizes" aria-label="Crayon size">
+            <button class="size" data-s="0" aria-label="Thin crayon" aria-pressed="false"><i style="width:6px;height:6px"></i></button>
+            <button class="size" data-s="1" aria-label="Medium crayon" aria-pressed="false"><i style="width:11px;height:11px"></i></button>
+            <button class="size" data-s="2" aria-label="Thick crayon" aria-pressed="true"><i style="width:17px;height:17px"></i></button>
+          </div>
+          <button class="tool" id="undoBtn" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg>Undo</button>
+          <span class="spacer"></span>
+          <span class="colorname" id="colorName"></span>
+        </div>
+        <div class="tray" id="tray" role="group" aria-label="Crayons"></div>
+      </div>
+    </div>
+    <div class="side">
+      <div class="card" aria-live="polite">
+        <span class="stage" id="cardStage"></span>
+        <p class="eyebrow" id="cardEyebrow"></p>
+        <h2 id="cardTitle"></h2>
+        <p class="txt" id="cardText"></p>
+        <p class="hint" id="cardHint" hidden></p>
+        <div id="progWrap" hidden><div class="prog"><i id="progBar"></i></div><p class="progtxt" id="progTxt"></p></div>
+        <div class="bigtimer" id="cardTimer" hidden></div>
+        <div class="actions"><button class="btn" id="cardBtn"></button></div>
+      </div>
+      <div class="card">
+        <h3 id="listTitle" style="font-size:1.2rem"></h3>
+        <ol class="plist" id="plist"></ol>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- TIMELINE -->
+<main id="timeline" class="wrap" hidden>
+  <div class="topbar">
+    <button class="back backHome"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>Levels</button>
+    <h1>My Prophecy Timeline</h1>
+  </div>
+  <div class="tl-top">
+    <p id="tlProgress"></p>
+    <button class="btn" id="tlPlay">▶ Play the story</button>
+  </div>
+  <div class="tl-grid">
+    <div class="tl-head"><span>Daniel 2: the statue</span><span>Kingdom</span><span>Daniel 7: the beasts</span></div>
+    <div id="tlRows" class="tl-grid"></div>
+  </div>
+</main>
+
+<!-- DRAW IT -->
+<main id="draw" class="wrap" hidden>
+  <div class="topbar">
+    <button class="back backHome"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>Levels</button>
+    <h1>Draw It!</h1>
+  </div>
+  <div class="drawgrid">
+    <div>
+      <div class="canvasbox"><canvas id="pad"></canvas></div>
+      <div class="toolbar">
+        <div class="toolrow">
+          <div class="sizes" id="sizes2" aria-label="Crayon size">
+            <button class="size" data-s="0" aria-label="Thin" aria-pressed="false"><i style="width:6px;height:6px"></i></button>
+            <button class="size" data-s="1" aria-label="Medium" aria-pressed="true"><i style="width:11px;height:11px"></i></button>
+            <button class="size" data-s="2" aria-label="Thick" aria-pressed="false"><i style="width:17px;height:17px"></i></button>
+          </div>
+          <button class="tool" id="clearBtn">Clear page</button>
+          <span class="spacer"></span>
+          <span class="colorname" id="colorName2"></span>
+        </div>
+        <div class="tray" id="tray2" role="group" aria-label="Crayons"></div>
+      </div>
+    </div>
+    <div class="side">
+      <div class="card">
+        <p class="eyebrow">One person draws, everyone else guesses</p>
+        <button class="secret hidden-word" id="secret">Tap to see your secret word</button>
+        <div class="timer" id="timer">60</div>
+        <p class="score" id="score">Points: 0</p>
+        <div class="actions" style="justify-content:center">
+          <button class="btn" id="goBtn">Start timer</button>
+          <button class="btn ghost" id="gotBtn" disabled>They guessed it!</button>
+          <button class="btn ghost" id="newBtn">New word</button>
+        </div>
+      </div>
+      <div class="card">
+        <h3 style="font-size:1.2rem; margin-bottom:6px">How to play</h3>
+        <p class="txt">Peek at the secret word without letting anyone see. Start the timer and draw it. No letters or numbers allowed! When someone guesses right, tap “They guessed it!” and pass the phone.</p>
+      </div>
+    </div>
+  </div>
+</main>
+
+<dialog id="qDialog">
+  <div class="qhead"><h2 id="qTitle"></h2><button class="hear" id="hearBtn">🔊 Hear it again</button></div>
+  <div class="qtimer" id="qTimer" hidden><i id="qTimerBar"></i></div>
+  <p class="q" id="qText"></p>
+  <div class="opts" id="qOpts"></div>
+  <p class="feedback" id="qFeedback" aria-live="assertive"></p>
+</dialog>
+
+<div class="overlay" id="intro" hidden>
+  <div class="card">
+    <h2 id="introTitle"></h2>
+    <p class="txt" id="introText"></p>
+    <p class="txt">Each part has two stages. First answer the question, then pick up your crayon and color the whole part yourself. Finish a part to win a sticker, and finish the level to win a trophy!</p>
+    <div class="actions"><button class="btn" id="introBtn">Let’s go!</button></div>
+  </div>
+</div>
+
+<div class="overlay" id="turnBox" hidden>
+  <div class="card" style="text-align:center">
+    <h2 id="turnTitle"></h2>
+    <p class="txt" id="turnText" style="margin:0 auto 14px"></p>
+    <ol class="podium" id="turnBoard"></ol>
+    <button class="btn" id="turnBtn"></button>
+  </div>
+</div>
+
+<div class="overlay" id="ending" hidden>
+  <div class="card">
+    <h2 id="endTitle"></h2>
+    <div class="bigstars" id="endStars"></div>
+    <blockquote id="endQuote"></blockquote>
+    <p class="txt" id="endText"></p>
+    <div class="actions">
+      <button class="btn" id="againBtn">Color it again</button>
+      <button class="btn ghost" id="tlBtn" hidden>See my prophecy timeline</button>
+      <button class="btn ghost" id="homeBtn">Pick another level</button>
+    </div>
+  </div>
+</div>
+
+<div class="prize" id="prize" hidden>
+  <div class="card">
+    <div class="ic" id="prizeIc"></div>
+    <p class="eyebrow" id="prizeKind"></p>
+    <h2 id="prizeTitle"></h2>
+    <p class="txt" id="prizeText" style="margin:0 auto 8px"></p>
+    <p class="pts" id="prizePts"></p>
+    <button class="btn" id="prizeBtn">Awesome!</button>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+const PALETTE = [
+  {n:'Scarlet', v:'#D3243A'}, {n:'Orange', v:'#F2862B'}, {n:'Yellow', v:'#F7CE46'}, {n:'Green', v:'#46A758'},
+  {n:'Sea green', v:'#2BA59A'}, {n:'Sky', v:'#56B8F2'}, {n:'Blue', v:'#2F5BD3'}, {n:'Purple', v:'#8148B8'},
+  {n:'Pink', v:'#F17AAE'}, {n:'Tan', v:'#E3C49A'}, {n:'Brown', v:'#8B5A2B'}, {n:'Clay', v:'#B9784C'},
+  {n:'Black', v:'#2A2A33'}, {n:'White', v:'#FFFFFF', light:true},
+  {n:'Gold', v:'#DDA21E', sw:'linear-gradient(135deg,#FFEBA3,#E2A72E 55%,#A86F12)'},
+  {n:'Silver', v:'#B4BCCA', sw:'linear-gradient(135deg,#FFFFFF,#C5CCD8 55%,#8C95A6)', light:true},
+  {n:'Bronze', v:'#B06A2C', sw:'linear-gradient(135deg,#F4BC86,#B06A2C 55%,#6E3C14)'},
+  {n:'Iron', v:'#5C6670', sw:'linear-gradient(135deg,#AEB7C1,#5C6670 55%,#2F363D)'}
+];
+
+const LEVELS = {
+statue:{
+  title:'Daniel’s Dream Statue', sub:'Daniel 2 · 6 parts', viewBox:'0 0 300 580', badge:13, listTitle:'The kingdoms, in order',
+  intro:{title:'A dream nobody could explain', text:'King Nebuchadnezzar had a dream so scary he couldn’t sleep, and none of his wise men could tell him what it meant. Daniel prayed with his three friends, and God showed him the dream: a giant statue made of different metals.'},
+  ending:{title:'God’s kingdom lasts forever', quote:'“And in the days of these kings shall the God of heaven set up a kingdom, which shall never be destroyed.”', ref:'Daniel 2:44', text:'Every kingdom on the statue came and went, just like Daniel said. Only God’s kingdom stays forever.'},
+  bg:`<g id="mountain" aria-hidden="true"><path d="M-20 590 L70 360 L115 410 L170 250 L230 380 L320 590 Z" fill="url(#gMount)" stroke="#1F2A4A" stroke-width="2.4" vector-effect="non-scaling-stroke"/><path d="M150 300 L170 250 L192 302 L180 294 L170 306 L160 294 Z" fill="#FFFFFF" stroke="#1F2A4A" stroke-width="2" vector-effect="non-scaling-stroke"/></g>`,
+  fg:`<g id="dust"></g>`,
+  parts:[
+    {name:'Head', allow:['Gold'], why:'The Bible says the head was gold.', sticker:['👑','Gold Crown'], q2:'What was the head of the statue made of?', opts2:['Gold','Silver','Clay'], short:'Babylon', group:'statue', label:[150,86], preview:'#E2A72E',
+     shapes:`<polygon points="116,52 124,22 138,42 150,14 162,42 176,22 184,52"/><rect x="137" y="110" width="26" height="22"/><ellipse cx="150" cy="82" rx="33" ry="38"/>`,
+     deco:`<circle class="deco" cx="139" cy="78" r="3"/><circle class="deco" cx="161" cy="78" r="3"/><path class="deco-line" d="M140 98 Q150 104 160 98"/>`,
+     q:'Daniel told the king, “You are this head of gold.” Which king was he talking to?', opts:['King Nebuchadnezzar','Pharaoh of Egypt','King Saul'],
+     hint:'He was the king of Babylon. Look at Daniel 2:37–38.', color:'Pick the gold crayon and color the whole head: crown, face and neck.',
+     story:'Daniel told King Nebuchadnezzar, “You are this head of gold.” Babylon was the richest kingdom in the world, famous for its giant walls and hanging gardens.', ref:'Daniel 2:37–38'},
+    {name:'Chest and arms', allow:['Silver'], why:'The Bible says the chest and arms were silver.', sticker:['🛡️','Silver Shield'], q2:'What metal were the chest and arms made of?', opts2:['Silver','Bronze','Gold'], short:'Medo-Persia', group:'statue', label:[150,186], preview:'#C5CCD8',
+     shapes:`<path d="M98 132 L80 140 L64 282 L84 286 L104 182 Z"/><path d="M202 132 L220 140 L236 282 L216 286 L196 182 Z"/><circle cx="73" cy="294" r="11"/><circle cx="227" cy="294" r="11"/><path d="M98 132 Q150 120 202 132 L196 232 L104 232 Z"/>`,
+     q:'Babylon fell in a single night. Which kingdom took over next?', opts:['The Medes and Persians','Egypt','The Philistines'],
+     hint:'Daniel read it on the wall at the king’s party. Look at Daniel 5:28.', color:'The chest and arms were silver. There are two arms, so there were two peoples: the Medes and the Persians.',
+     story:'Silver is worth less than gold. On the very night Daniel read the writing on the wall, the Medes and Persians marched into Babylon and took over.', ref:'Daniel 5:28–31'},
+    {name:'Belly and thighs', allow:['Bronze'], why:'The Bible says the belly and thighs were bronze.', sticker:['🏺','Bronze Vase'], q2:'What metal were the belly and thighs made of?', opts2:['Bronze','Iron','Silver'], short:'Greece', group:'statue', label:[150,268], preview:'#B06A2C',
+     shapes:`<path d="M104 232 L196 232 L201 302 L99 302 Z"/><path d="M99 302 L148 302 L144 372 L107 372 Z"/><path d="M152 302 L201 302 L193 372 L156 372 Z"/>`,
+     q:'The bronze kingdom had a young king who conquered faster than anyone before him. Which kingdom was it?', opts:['Greece','Rome','Assyria'],
+     hint:'Daniel saw this kingdom named in another vision. Look at Daniel 8:21.', color:'This part was bronze. Grab the bronze crayon!',
+     story:'Greece came next. Its young king, Alexander the Great, conquered almost the whole known world in just a few years.', ref:'Daniel 8:21'},
+    {name:'Legs', allow:['Iron'], why:'The Bible says the legs were iron.', sticker:['⚔️','Iron Sword'], q2:'What were the legs of the statue made of?', opts2:['Iron','Gold','Wood'], short:'Rome', group:'statue', label:[125,450], preview:'#5C6670',
+     shapes:`<path d="M107 372 L144 372 L140 520 L113 520 Z"/><path d="M156 372 L193 372 L187 520 L160 520 Z"/>`,
+     q:'The fourth kingdom was strong as iron. Which empire was ruling when Jesus was born?', opts:['Rome','Persia','Babylon'],
+     hint:'Caesar Augustus sent out a decree. Look at Luke 2:1.', color:'The legs were iron, the strongest metal of all.',
+     story:'Iron breaks everything it hits. Rome was strong like iron, and it was ruling the world when Jesus was born in Bethlehem.', ref:'Daniel 2:40; Luke 2:1'},
+    {name:'Feet', allow:['Iron','Clay'], why:'The Bible says the feet were iron mixed with clay.', sticker:['🧱','Clay Brick'], q2:'What two things were the feet made of?', opts2:['Iron and clay','Gold and silver','Wood and stone'], short:'Divided nations', group:'statue', label:[117,538], preview:'#8E7262',
+     shapes:`<path d="M113 520 L140 520 L143 552 L92 552 Q92 532 113 520 Z"/><path d="M160 520 L187 520 Q208 532 208 552 L157 552 Z"/>`,
+     q:'Why were the feet made of iron mixed with clay?', opts:['The kingdoms would be divided and never stick together','The statue was being repaired','Clay makes iron stronger'],
+     hint:'Think about what happens when you try to mix iron and clay. Look at Daniel 2:43.', color:'Iron mixed with clay! Use the iron crayon and the clay crayon together.',
+     story:'Rome broke apart into many nations. They tried to join together through marriages and treaties, but they never stuck, just like iron and clay.', ref:'Daniel 2:41–43'},
+    {name:'The stone', allow:null, sticker:['⛰️','Mountain'], q2:'What does the stone stand for?', opts2:['God’s kingdom that lasts forever','Babylon','Rome'], short:'God’s kingdom', group:'stoneWrap', label:[258,46], preview:'#B9AE9C',
+     shapes:`<path d="M238 34 L262 24 L282 38 L278 62 L252 68 L234 54 Z"/>`,
+     deco:`<path class="deco-line" d="M246 44 L256 40 M262 50 L270 46"/>`,
+     q:'A stone cut out without hands smashed the statue. What happened to the stone next?', opts:['It became a great mountain that filled the whole earth','It broke into tiny pieces','It rolled into the sea'],
+     hint:'Look at Daniel 2:35.', color:'This stone wasn’t made by people. Color it any way you like, then watch what happens!',
+     story:'The whole statue turned to dust and blew away like chaff. The stone grew into a mountain that filled the earth. That stone is God’s kingdom, and it will never end.', ref:'Daniel 2:34–35, 44'}
+  ]
+},
+beasts:{
+  title:'Four Beasts from the Sea', sub:'Daniel 7 · 5 parts', viewBox:'0 0 400 520', badge:12, listTitle:'What Daniel saw, in order',
+  intro:{title:'Daniel’s own dream', text:'Years later, God gave Daniel a dream of his own. A storm whipped up the great sea, and four huge beasts climbed out, one after another. Each one was different, and each one stood for a kingdom.'},
+  ending:{title:'Jesus is coming in the clouds', quote:'“I saw in the night visions, and, behold, one like the Son of man came with the clouds of heaven.”', ref:'Daniel 7:13', text:'After all four beasts, Daniel saw Jesus receive a kingdom that will never pass away. That’s the Second Coming!'},
+  bg:`<path class="deco-line" d="M18 30 q14 -12 28 0 t28 0"/><path class="deco-line" d="M326 24 q14 -12 28 0 t28 0"/><path class="deco-line" d="M14 216 q12 -10 24 0 t24 0"/><path class="deco-line" d="M338 214 q12 -10 24 0 t24 0"/>`,
+  parts:[
+    {name:'The great sea', allow:['Blue','Sky','Sea green','White'], why:'The great sea is water.', sticker:['🌊','Great Sea'], short:'The great sea', label:[200,496], preview:'#2F5BD3',
+     shapes:`<path d="M0 446 Q25 432 50 446 T100 446 T150 446 T200 446 T250 446 T300 446 T350 446 T400 446 L400 520 L0 520 Z"/><path d="M0 474 Q30 460 60 474 T120 474 T180 474 T240 474 T300 474 T360 474 Q380 462 400 474 L400 520 L0 520 Z"/>`,
+     q:'Daniel saw four great beasts come up out of something. What was it?', opts:['The great sea','A dark cave','The clouds'],
+     hint:'The four winds stirred it up. Look at Daniel 7:2–3.', color:'Color the stormy sea. Try two different blues for the waves!',
+     story:'The four winds stirred up the great sea, and four huge beasts came up out of it. In the Bible, stormy waters can stand for lots of people and nations.', ref:'Daniel 7:2–3'},
+    {name:'Lion with wings', allow:null, sticker:['🦁','Winged Lion'], short:'Lion: Babylon', label:[104,144], preview:'#E8A33A',
+     shapes:`<path d="M95 118 Q78 52 128 30 Q124 58 152 50 Q142 78 166 78 Q136 100 120 122 Z"/><path d="M150 138 Q186 128 178 96 Q192 100 188 112 Q182 140 152 148 Z"/><rect x="62" y="158" width="13" height="38" rx="4"/><rect x="128" y="158" width="13" height="38" rx="4"/><ellipse cx="102" cy="142" rx="54" ry="28"/><circle cx="52" cy="110" r="32"/><circle cx="50" cy="112" r="19"/>`,
+     deco:`<circle class="deco" cx="44" cy="108" r="2.6"/><circle class="deco" cx="56" cy="108" r="2.6"/><path class="deco" d="M46 116 L54 116 L50 121 Z"/>`,
+     q:'The first beast was like a lion. What did it have?', opts:['Eagle’s wings','A long trunk','Ten horns'],
+     hint:'Look at Daniel 7:4.', color:'The Bible doesn’t say what color the lion was. You choose! The mane, face and wings can all be different.',
+     story:'The lion with eagle’s wings is Babylon again, the same kingdom as the head of gold. Babylon was proud and fast, like a lion that could fly.', ref:'Daniel 7:4'},
+    {name:'Bear with three ribs', allow:null, sticker:['🐻','Bear'], short:'Bear: Medo-Persia', label:[312,134], preview:'#8B5A2B',
+     shapes:`<rect x="262" y="158" width="14" height="36" rx="4"/><rect x="330" y="152" width="14" height="36" rx="4"/><ellipse cx="305" cy="132" rx="62" ry="36" transform="rotate(-12 305 132)"/><circle cx="236" cy="84" r="9"/><circle cx="262" cy="80" r="9"/><circle cx="250" cy="104" r="25"/><path d="M218 112 Q228 102 240 108 L238 112 Q228 107 220 116 Z"/><path d="M216 120 Q228 110 242 116 L240 120 Q228 115 218 124 Z"/><path d="M218 128 Q230 120 242 124 L240 128 Q230 124 220 132 Z"/>`,
+     deco:`<circle class="deco" cx="250" cy="98" r="2.6"/><circle class="deco" cx="232" cy="104" r="3"/>`,
+     q:'The bear was raised up on one side. What was in its mouth?', opts:['Three ribs','A fish','A golden crown'],
+     hint:'Look at Daniel 7:5.', color:'Color the bear, then make the three ribs stand out.',
+     story:'The bear is Medo-Persia. One side was raised higher because Persia grew stronger than the Medes. The three ribs stand for three kingdoms it conquered.', ref:'Daniel 7:5'},
+    {name:'Leopard with four heads', allow:null, sticker:['🐆','Leopard'], short:'Leopard: Greece', label:[112,354], preview:'#F2C14E',
+     shapes:`<path d="M100 338 Q84 290 112 274 Q116 304 124 324 Z"/><path d="M112 332 Q106 278 142 262 Q142 296 152 308 Z"/><path d="M136 330 Q140 282 174 274 Q166 306 166 318 Z"/><path d="M150 338 Q166 300 190 300 Q176 324 170 340 Z"/><path d="M158 352 Q190 352 192 330 Q200 336 196 346 Q190 364 160 362 Z"/><rect x="70" y="362" width="12" height="38" rx="4"/><rect x="138" y="362" width="12" height="38" rx="4"/><ellipse cx="110" cy="352" rx="56" ry="24"/><circle cx="40" cy="330" r="13"/><circle cx="52" cy="308" r="13"/><circle cx="72" cy="296" r="13"/><circle cx="95" cy="298" r="13"/>`,
+     deco:`<circle class="deco" cx="100" cy="346" r="3"/><circle class="deco" cx="118" cy="358" r="3"/><circle class="deco" cx="134" cy="346" r="3"/><circle class="deco" cx="86" cy="360" r="3"/><circle class="deco" cx="148" cy="356" r="3"/><circle class="deco" cx="36" cy="328" r="2"/><circle class="deco" cx="48" cy="306" r="2"/><circle class="deco" cx="68" cy="294" r="2"/><circle class="deco" cx="91" cy="296" r="2"/>`,
+     q:'How many heads did the leopard have?', opts:['Four','Two','Seven'],
+     hint:'Look at Daniel 7:6.', color:'Leopards have spots! Color the body, the four heads and the four wings.',
+     story:'The leopard is Greece. Its four wings show how fast Alexander conquered. After he died, his kingdom was split between four generals: the four heads.', ref:'Daniel 7:6'},
+    {name:'The terrible beast', allow:null, sticker:['🐉','Iron Teeth'], short:'Beast: Rome', label:[306,340], preview:'#5C6670',
+     shapes:`<path d="M368 350 Q398 338 392 308 Q402 312 400 326 Q396 356 370 362 Z"/><rect x="252" y="368" width="16" height="34" rx="3"/><rect x="338" y="366" width="16" height="34" rx="3"/><path d="M232 352 Q240 302 300 300 Q362 296 376 342 Q378 374 340 376 L252 378 Q230 376 232 352 Z"/><path d="M208 334 Q204 302 234 298 L264 306 L260 346 Q234 354 208 342 Z"/><path d="M212 302 L214 279 L216.5 300 L219 276 L221.5 300 L224 279 L226.5 300 L229 276 L231.5 300 L234 279 L236.5 300 L239 276 L241.5 300 L244 279 L246.5 300 L249 276 L251.5 300 L254 279 L256.5 300 L259 276 L261.5 304 Z"/><path d="M212 342 L217 354 L222 344 L227 356 L232 345 L237 356 L242 346 L247 355 L252 346 L256 344 L254 340 L214 338 Z"/>`,
+     deco:`<circle class="deco" cx="226" cy="316" r="3.2"/><path class="deco" d="M252 402 L256 408 L260 402 Z M262 402 L266 408 L268 402 Z M338 400 L342 406 L346 400 Z M348 400 L352 406 L354 400 Z"/>`,
+     q:'The fourth beast was dreadful and very strong. What were its teeth made of?', opts:['Iron','Gold','Wood'],
+     hint:'Look at Daniel 7:7.', color:'Its teeth were iron. Try the iron crayon on the teeth, and count the ten horns as you color them!',
+     story:'The fourth beast is Rome, strong like the iron legs of the statue. Its ten horns are like the statue’s ten toes: the kingdoms Rome broke into.', ref:'Daniel 7:7, 23–24'}
+  ]
+},
+sanctuary:{
+  title:'Walk Through the Sanctuary', sub:'Exodus 25–30 · 7 parts', viewBox:'0 0 500 300', badge:9, listTitle:'The path to God, in order',
+  intro:{title:'God’s house in the desert', text:'God told Moses, “Let them make me a sanctuary, that I may dwell among them.” Every piece inside had a job, and every piece pointed to Jesus. Walk in through the gate and discover them one by one.'},
+  ending:{title:'Every piece points to Jesus', quote:'“I am the way, the truth, and the life: no man cometh unto the Father, but by me.”', ref:'John 14:6', text:'From the gate to the ark, the sanctuary showed the way back to God. Jesus is that way, and today He is our High Priest in heaven (Hebrews 8:1–2).'},
+  bg: (() => {
+    let posts = '';
+    for(let x=20; x<=480; x+=23){ posts += `<circle cx="${x}" cy="40" r="2.6" fill="#8C6B3F"/><circle cx="${x}" cy="260" r="2.6" fill="#8C6B3F"/>`; }
+    for(let y=62; y<=240; y+=22){ if(y<112 || y>188) posts += `<circle cx="20" cy="${y}" r="2.6" fill="#8C6B3F"/>`; posts += `<circle cx="480" cy="${y}" r="2.6" fill="#8C6B3F"/>`; }
+    return `<rect x="20" y="40" width="460" height="220" rx="6" fill="#F6EFDD" stroke="#1F2A4A" stroke-width="2" vector-effect="non-scaling-stroke"/>${posts}
+      <rect x="250" y="92" width="206" height="116" rx="3" fill="#FBF7EC" stroke="#1F2A4A" stroke-width="2" vector-effect="non-scaling-stroke"/>
+      <line x1="388" y1="92" x2="388" y2="208" stroke="#7A3E9D" stroke-width="3" stroke-dasharray="6 3"/>
+      <text class="maplabel" x="140" y="58">Courtyard</text><text class="maplabel" x="319" y="86">Holy Place</text><text class="maplabel" x="422" y="86">Most Holy Place</text>
+      <text class="maplabel" x="44" y="254">Enter from the east</text>`;
+  })(),
+  parts:[
+    {name:'The gate', allow:['Blue','Sky','Purple','Scarlet'], why:'The gate curtain was blue, purple and scarlet.', sticker:['🚪','The Door'], short:'The gate', label:[21,104], preview:'#8148B8',
+     shapes:`<rect x="12" y="115" width="18" height="23" rx="2"/><rect x="12" y="138" width="18" height="24"/><rect x="12" y="162" width="18" height="23" rx="2"/>`,
+     q:'What was the first thing you came to at the sanctuary?', opts:['The gate (the door)','The ark','The lampstand'],
+     hint:'Everyone had to come in the same way. Look at Exodus 27:16.', color:'The gate curtain was blue, purple and scarlet. Color the three stripes!',
+     story:'There was only one way in: the gate. Jesus said, “I am the door.” He is the way we come to God.', ref:'Exodus 27:16; John 10:9'},
+    {name:'Altar of burnt offering', allow:['Bronze','Orange','Scarlet','Yellow'], why:'The altar was bronze, with a fire burning on it.', sticker:['🔥','Altar Fire'], short:'The altar', label:[114,112], preview:'#B06A2C',
+     shapes:`<rect x="88" y="124" width="10" height="10" rx="1"/><rect x="130" y="124" width="10" height="10" rx="1"/><rect x="88" y="166" width="10" height="10" rx="1"/><rect x="130" y="166" width="10" height="10" rx="1"/><rect x="92" y="128" width="44" height="44" rx="3"/><path d="M114 162 Q103 150 111 138 Q114 146 118 144 Q116 136 122 132 Q131 147 124 159 Q120 166 114 162 Z"/>`,
+     q:'What happened at the altar of burnt offering?', opts:['A lamb was sacrificed for sin','Bread was baked','Incense was burned'],
+     hint:'Look at Leviticus 1:4.', color:'The altar was covered in bronze, with a horn on each corner. Make the fire bright!',
+     story:'A lamb died in the sinner’s place. Every lamb pointed to Jesus, the Lamb of God who takes away the sin of the world.', ref:'Exodus 27:1–2; John 1:29'},
+    {name:'The laver', allow:['Bronze','Sky','Blue','White'], why:'The laver was a bronze bowl full of water.', sticker:['💧','Clean Water'], short:'The laver', label:[190,122], preview:'#B06A2C',
+     shapes:`<circle cx="190" cy="150" r="20"/><circle cx="190" cy="150" r="13"/>`,
+     q:'What did the priests do at the laver, the big bronze bowl?', opts:['Washed their hands and feet','Cooked their dinner','Kept the Ten Commandments'],
+     hint:'Look at Exodus 30:18–21.', color:'The laver was bronze, filled with clean water.',
+     story:'The priests washed before they served God. Jesus washes our hearts clean when we come to Him.', ref:'Exodus 30:18–21; 1 John 1:9'},
+    {name:'Table of bread', allow:['Gold','Tan','Brown'], why:'The table was gold, and the bread was baked brown.', sticker:['🍞','Bread of Life'], short:'The table', label:[346,116], preview:'#E2A72E',
+     shapes:`<rect x="280" y="104" width="52" height="24" rx="3"/><rect x="286" y="108" width="18" height="16" rx="3"/><rect x="308" y="108" width="18" height="16" rx="3"/>`,
+     q:'What was kept on the golden table in the Holy Place?', opts:['Twelve loaves of bread','Twelve shiny stones','Twelve swords'],
+     hint:'Look at Leviticus 24:5–6.', color:'The table was covered in gold. Color the two stacks of bread too!',
+     story:'The bread was always there, one loaf for each tribe of Israel. Jesus said, “I am the bread of life.”', ref:'Leviticus 24:5–6; John 6:35'},
+    {name:'Golden lampstand', allow:['Gold','Yellow','Orange','Scarlet'], why:'The lampstand was pure gold with burning flames.', sticker:['🕎','Lampstand'], short:'The lampstand', label:[350,182], preview:'#E2A72E',
+     shapes:`<rect x="300" y="192" width="20" height="6" rx="2"/><rect x="307" y="150" width="6" height="44"/><path d="M282 152 Q282 176 310 176 Q338 176 338 152 L333 152 Q333 171 310 171 Q287 171 287 152 Z"/><path d="M291 152 Q291 168 310 168 Q329 168 329 152 L324 152 Q324 163 310 163 Q296 163 296 152 Z"/><path d="M299 152 Q299 160 310 160 Q321 160 321 152 L317 152 Q317 156 310 156 Q303 156 303 152 Z"/><ellipse cx="284.5" cy="146" rx="3" ry="4.5"/><ellipse cx="293.5" cy="146" rx="3" ry="4.5"/><ellipse cx="301" cy="146" rx="3" ry="4.5"/><ellipse cx="310" cy="145" rx="3" ry="4.5"/><ellipse cx="319" cy="146" rx="3" ry="4.5"/><ellipse cx="326.5" cy="146" rx="3" ry="4.5"/><ellipse cx="335.5" cy="146" rx="3" ry="4.5"/>`,
+     q:'How many lamps were on the golden lampstand?', opts:['Seven','Three','Twelve'],
+     hint:'Look at Exodus 25:37.', color:'The lampstand was pure gold. Don’t forget to light all seven flames!',
+     story:'The lampstand was the only light in the Holy Place. Jesus said, “I am the light of the world.”', ref:'Exodus 25:31–37; John 8:12'},
+    {name:'Altar of incense', allow:['Gold'], why:'The incense altar was covered in gold.', sticker:['🙏','Prayer'], short:'Incense altar', label:[369,176], preview:'#E2A72E',
+     shapes:`<rect x="360" y="142" width="18" height="18" rx="2"/><rect x="364" y="146" width="10" height="10" rx="1"/>`,
+     deco:`<path class="deco-line" d="M369 140 q-6 -6 0 -12 t0 -12 M374 138 q5 -5 0 -10"/>`,
+     q:'What did the sweet smoke from the altar of incense stand for?', opts:['Prayers going up to God','A fire alarm','A signal for dinner'],
+     hint:'Look at Revelation 8:3–4.', color:'This little altar was gold, right in front of the curtain.',
+     story:'The smoke rose up before God, just like our prayers do. Jesus brings our prayers to the Father.', ref:'Exodus 30:1–8; Revelation 8:3–4'},
+    {name:'Ark of the covenant', allow:['Gold'], why:'The ark was covered in gold.', sticker:['📜','Ten Commandments'], short:'The ark', label:[422,182], preview:'#E2A72E',
+     shapes:`<path d="M404 134 Q403 116 420 124 L418 134 Z"/><path d="M440 134 Q441 116 424 124 L426 134 Z"/><rect x="404" y="140" width="36" height="22" rx="2"/><rect x="400" y="134" width="44" height="8" rx="2"/>`,
+     q:'What was kept inside the ark of the covenant?', opts:['The Ten Commandments','Gold coins','King David’s crown'],
+     hint:'Look at Exodus 25:16 and Deuteronomy 10:5.', color:'The ark was covered in gold, with two golden angels on the lid.',
+     story:'God’s law was inside, and the mercy seat was on top. God’s presence shone there, and the high priest went in only once a year.', ref:'Exodus 25:10–22'}
+  ]
+}
+};
+
+
+
+const DRAW_WORDS = ['A lion with eagle’s wings','A bear with three ribs','A leopard with four heads','A beast with ten horns','The head of gold',
+  'A stone cut without hands','A mountain filling the earth','The writing on the wall','Daniel praying by his window','The lions’ den',
+  'The fiery furnace','The sanctuary gate','The golden lampstand','Twelve loaves of bread','The ark of the covenant','A lamb on the altar',
+  'Jesus coming in the clouds','The laver of water','A king’s scary dream','Smoke rising from incense'];
+
+const TROPHIES = [
+  {id:'timeline', ic:'🗺️', name:'Prophecy Builder', desc:'Match every kingdom on your prophecy timeline'},
+  {id:'statue', ic:'🗿', name:'Dream Interpreter', desc:'Finish Daniel’s Dream Statue'},
+  {id:'beasts', ic:'🦁', name:'Vision Explorer', desc:'Finish Four Beasts from the Sea'},
+  {id:'sanctuary', ic:'🕎', name:'Sanctuary Guide', desc:'Walk all the way to the ark'},
+  {id:'wise', ic:'🦉', name:'Wise as Daniel', desc:'Every answer right on the first try in one level'},
+  {id:'lines', ic:'✏️', name:'Inside the Lines', desc:'Color a whole level without going outside the lines'},
+  {id:'champ', ic:'🏆', name:'Prophecy Champion', desc:'Finish all three levels'},
+  {id:'party', ic:'🎉', name:'Race Winner', desc:'Win a party race'}
+];
+const PLAYER_COLORS = ['#E5484D','#2F5BD3','#1F9D5B','#8148B8'];
+
+/* ---------------- storage, sound, voice ---------------- */
+const NS = 'http://www.w3.org/2000/svg';
+const $ = s => document.querySelector(s);
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const store = (() => { let d = null; try{ d = JSON.parse(localStorage.getItem('bcq-v3') || 'null'); }catch(e){} return Object.assign({stars:{}, trophies:{}, stickers:{}, points:0, history:[], sound:true, art:{}}, d || {}); })();
+function persist(){ try{ localStorage.setItem('bcq-v3', JSON.stringify(store)); }catch(e){} }
+
+let actx;
+function tone(seq){
+  if(!store.sound) return;
+  try{
+    actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+    const t0 = actx.currentTime;
+    seq.forEach(([f, st, dur, type='sine', vol=.18]) => {
+      const o = actx.createOscillator(), g = actx.createGain();
+      o.type = type; o.frequency.value = f;
+      g.gain.setValueAtTime(0, t0+st); g.gain.linearRampToValueAtTime(vol, t0+st+.02); g.gain.exponentialRampToValueAtTime(.001, t0+st+dur);
+      o.connect(g).connect(actx.destination); o.start(t0+st); o.stop(t0+st+dur+.05);
+    });
+  }catch(e){}
+}
+const SFX = {
+  right:()=>tone([[660,0,.15],[880,.12,.28]]),
+  wrong:()=>tone([[200,0,.18,'square',.07],[150,.16,.3,'square',.07]]),
+  sticker:()=>tone([[523,0,.12],[659,.1,.12],[784,.2,.25]]),
+  trophy:()=>tone([[523,0,.16],[659,.16,.16],[784,.32,.16],[1047,.48,.6]]),
+  tick:()=>tone([[1100,0,.05,'sine',.05]])
+};
+function speak(text, onend){
+  let done = false; const fin = () => { if(!done){ done = true; onend && onend(); } };
+  if(!store.sound || !('speechSynthesis' in window)){ if(onend) setTimeout(fin, 60); return; }
+  try{
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text.replace(/[“”]/g,''));
+    u.rate = .95; u.pitch = 1.1; u.lang = 'en-US'; u.onend = fin; u.onerror = fin;
+    speechSynthesis.speak(u);
+  }catch(e){}
+  if(onend) setTimeout(fin, Math.min(16000, 1400 + text.length * 75));
+}
+function hush(){ try{ speechSynthesis.cancel(); }catch(e){} }
+function renderSound(){ document.querySelectorAll('.soundBtn').forEach(b => { b.textContent = store.sound ? '🔊 Voice on' : '🔇 Voice off'; b.setAttribute('aria-pressed', store.sound); }); }
+document.querySelectorAll('.soundBtn').forEach(b => b.addEventListener('click', () => { store.sound = !store.sound; persist(); if(!store.sound) hush(); renderSound(); }));
+renderSound();
+
+let toastT;
+function toast(msg){ const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 2400); }
+function starHTML(n){ let h = ''; for(let i=0;i<3;i++) h += i < n ? '★' : '<span class="off">★</span>'; return h; }
+function show(view){ ['home','partySetup','level','draw','timeline'].forEach(v => $('#'+v).hidden = v !== view); window.scrollTo(0,0); }
+function goHome(){ tlPlaying = false; hush(); stopTimers(); renderHome(); show('home'); }
+document.querySelectorAll('.backHome').forEach(b => b.addEventListener('click', goHome));
+$('#backBtn').addEventListener('click', goHome);
+
+/* ---------------- prizes ---------------- */
+const popQ = []; let popOpen = false;
+function popup(o){ popQ.push(o); if(!popOpen) nextPop(); }
+function nextPop(){
+  const o = popQ.shift(); const box = $('#prize');
+  if(!o){ popOpen = false; box.hidden = true; return; }
+  popOpen = true;
+  $('#prizeIc').textContent = o.ic; $('#prizeKind').textContent = o.kind; $('#prizeTitle').textContent = o.title;
+  $('#prizeText').textContent = o.text || ''; $('#prizePts').textContent = o.pts || '';
+  box.querySelectorAll('.confetti').forEach(c => c.remove());
+  box.hidden = false; $('#prizeBtn').focus();
+  if(o.big){ SFX.trophy(); confetti(box); } else SFX.sticker();
+  setTimeout(() => speak(o.say || o.title), 350);
+  $('#prizeBtn').onclick = () => { hush(); if(o.after) o.after(); nextPop(); };
+}
+function confetti(box){
+  if(reduce) return;
+  const cols = ['#F2C14E','#E5484D','#2F5BD3','#46A758','#8148B8','#F17AAE'];
+  for(let i=0;i<70;i++){
+    const c = document.createElement('i'); c.className = 'confetti';
+    c.style.left = Math.random()*100 + '%'; c.style.background = cols[i % cols.length];
+    c.style.animationDuration = (1.8 + Math.random()*1.8) + 's'; c.style.animationDelay = Math.random()*.6 + 's';
+    box.appendChild(c);
+  }
+}
+function award(id){
+  if(store.trophies[id]) return;
+  store.trophies[id] = Date.now(); persist();
+  const t = TROPHIES.find(x => x.id === id);
+  popup({ic:t.ic, kind:'New trophy!', title:t.name, text:t.desc, big:true, say:`You won a trophy! ${t.name}!`});
+}
+
+/* ---------------- render art ---------------- */
+function renderArt(lv, svg, interactive){
+  svg.setAttribute('viewBox', lv.viewBox);
+  let out = '';
+  if(interactive) out += `<defs>${lv.parts.map((p,i)=>`<clipPath id="clip-${i}">${p.shapes}</clipPath>`).join('')}</defs>`;
+  out += lv.bg || '';
+  let open = null;
+  lv.parts.forEach((p,i) => {
+    const g = p.group || null;
+    if(g !== open){ if(open) out += '</g>'; if(g) out += `<g id="${g}">`; open = g; }
+    const [x,y] = p.label, r = lv.badge;
+    out += `<g class="part${interactive?' locked':''}" id="part-${i}" data-i="${i}">
+      <g class="fills">${p.shapes}</g>
+      ${interactive?`<g class="strokes" clip-path="url(#clip-${i})"></g>`:''}
+      <g class="lines">${p.shapes}${p.deco||''}</g>
+      ${interactive?`<g class="badge"><circle cx="${x}" cy="${y}" r="${r}"/><text x="${x}" y="${y+1}" style="font-size:${r*1.15}px">${i+1}</text></g>`:''}
+    </g>`;
+  });
+  if(open) out += '</g>';
+  if(interactive) out += lv.fg || '';
+  svg.innerHTML = out;
+  svg.querySelectorAll('.fills > *').forEach(el => el.classList.add('fs'));
+  svg.querySelectorAll('.lines > *').forEach(el => { if(!el.classList.contains('deco') && !el.classList.contains('deco-line')) el.classList.add('ol'); });
+  if(!interactive){
+    lv.parts.forEach((p,i) => svg.querySelectorAll(`#part-${i} .fs`).forEach(el => el.style.fill = p.preview));
+    const m = svg.querySelector('#mountain'); if(m) m.remove();
+    svg.querySelectorAll('[id]').forEach(el => el.removeAttribute('id'));
+  }
+}
+
+/* ---------------- home ---------------- */
+function renderHome(){
+  $('#pointsBadge').textContent = `⭐ ${store.points.toLocaleString()} points`;
+  const wrap = $('#levelCards'); wrap.innerHTML = '';
+  Object.entries(LEVELS).forEach(([k,lv]) => {
+    const b = document.createElement('button'); b.className = 'lvl';
+    b.innerHTML = `<div class="thumb"><svg xmlns="${NS}" preserveAspectRatio="xMidYMid meet" aria-hidden="true"></svg></div>
+      <div class="meta"><h2>${lv.title}</h2><p>${lv.sub}</p><div class="stars" aria-label="${store.stars[k]||0} of 3 stars">${starHTML(store.stars[k]||0)}</div></div>`;
+    renderArt(lv, b.querySelector('svg'), false);
+    b.addEventListener('click', () => openSolo(k));
+    wrap.appendChild(b);
+  });
+  const party = document.createElement('button'); party.className = 'lvl';
+  party.innerHTML = `<div class="thumb drawthumb" style="font-size:4.2rem">🏁</div>
+    <div class="meta"><h2>Party race</h2><p>2–4 players take turns on Daniel 2. Fastest answers and neatest coloring win.</p><div class="stars" style="color:var(--muted)">Scoreboard + trophy</div></div>`;
+  party.addEventListener('click', openPartySetup);
+  const tl = document.createElement('button'); tl.className = 'lvl';
+  tl.innerHTML = `<div class="thumb drawthumb" style="font-size:3.2rem; letter-spacing:4px">👑<span style="font-size:2rem; align-self:center">=</span>🦁</div>
+    <div class="meta"><h2>My Prophecy Timeline</h2><p>Your colored statue and beasts, side by side. Discover they tell the same story!</p><div class="stars" style="color:var(--muted)">${tlMatched()} of 6 kingdoms matched</div></div>`;
+  tl.querySelector('.thumb').style.display = 'flex'; tl.querySelector('.thumb').style.justifyContent = 'center'; tl.querySelector('.thumb').style.alignItems = 'center';
+  tl.addEventListener('click', openTimeline);
+  wrap.appendChild(tl);
+  wrap.appendChild(party);
+  const d = document.createElement('button'); d.className = 'lvl';
+  const cols = ['#D3243A','#F7CE46','#46A758','#2F5BD3','#8148B8','#E2A72E'];
+  d.innerHTML = `<div class="thumb drawthumb"><div class="mini-crayons">${cols.map((c,i)=>`<span style="--c:${c};--h:${60+((i*23)%50)}px"></span>`).join('')}</div></div>
+    <div class="meta"><h2>Draw It!</h2><p>A guessing game for your class. One draws, everyone guesses.</p><div class="stars" style="color:var(--muted)">For groups</div></div>`;
+  d.addEventListener('click', openDraw);
+  wrap.appendChild(d);
+  $('#trophyShelf').innerHTML = TROPHIES.map(t => `<div class="trophy ${store.trophies[t.id]?'':'locked'}"><div class="ic">${t.ic}</div><b>${t.name}</b><small>${t.desc}</small></div>`).join('');
+  const all = Object.values(LEVELS).flatMap(l => l.parts.map(p => p.sticker));
+  $('#stickerBook').innerHTML = all.map(([ic,name]) => `<span class="${store.stickers[name]?'':'off'}" title="${name}">${ic}</span>`).join('');
+}
+
+/* ---------------- crayons ---------------- */
+function buildTray(el, nameEl, onPick){
+  el.innerHTML = '';
+  PALETTE.forEach((c,i) => {
+    const b = document.createElement('button'); b.className = 'crayon' + (c.light ? ' light' : '');
+    b.style.setProperty('--sw', c.sw || c.v); b.style.setProperty('--i', i);
+    b.dataset.n = c.n; b.setAttribute('aria-label', c.n); b.setAttribute('aria-pressed', i===0);
+    b.innerHTML = '<span class="tip"></span><span class="body"></span>';
+    b.addEventListener('click', () => { el.querySelectorAll('.crayon').forEach(x => x.setAttribute('aria-pressed','false')); b.setAttribute('aria-pressed','true'); nameEl.textContent = c.n; onPick(c); });
+    el.appendChild(b);
+  });
+  nameEl.textContent = PALETTE[0].n; onPick(PALETTE[0]);
+}
+function bindSizes(el, onPick){
+  el.querySelectorAll('.size').forEach(b => b.addEventListener('click', () => {
+    el.querySelectorAll('.size').forEach(x => x.setAttribute('aria-pressed','false')); b.setAttribute('aria-pressed','true'); onPick(+b.dataset.s);
+  }));
+}
+function listNames(a){ return a.length === 1 ? a[0].toLowerCase() : a.slice(0,-1).map(x=>x.toLowerCase()).join(', ') + ' or ' + a[a.length-1].toLowerCase(); }
+
+/* ---------------- game engine ---------------- */
+const art = $('#art');
+let mode = 'solo', key, lv, step, phase, size = 2, color = PALETTE[0];
+let strokes = [], drawing = null, mask = null, partOutside = 0, levelOutside = 0, lastWarn = 0;
+let firstTry = 0, tried = false, answerPts = 0, levelPts = 0;
+let vbFull = [0,0,100,100], vbCur = [0,0,100,100], vbAnim = 0;
+let party = null, qInt = 0, cInt = 0, answered = false, qLeft = 0;
+const SIZES = [10, 18, 30];
+
+buildTray($('#tray'), $('#colorName'), c => color = c);
+bindSizes($('#sizes'), s => size = s);
+$('#undoBtn').addEventListener('click', () => { const s = strokes.pop(); if(s){ s.path.remove(); recompute(); } updateUI(); });
+
+function stopTimers(){ clearInterval(qInt); clearInterval(cInt); qInt = cInt = 0; }
+
+function openSolo(k){
+  mode = 'solo'; key = k; lv = LEVELS[k];
+  $('#partyBar').hidden = true;
+  $('#lvlTitle').textContent = lv.title; $('#listTitle').textContent = lv.listTitle;
+  show('level'); startLevel();
+  $('#introTitle').textContent = lv.intro.title; $('#introText').textContent = lv.intro.text;
+  $('#intro').hidden = false; $('#introBtn').focus();
+  speak(`${lv.intro.title}. ${lv.intro.text}`);
+}
+$('#introBtn').addEventListener('click', () => { $('#intro').hidden = true; hush(); setPhase('ask'); speak(`Part one. Tap the glowing part to hear your first question.`); });
+
+function startLevel(){
+  renderArt(lv, art, true);
+  vbFull = lv.viewBox.split(' ').map(Number); vbCur = vbFull.slice();
+  step = 0; firstTry = 0; levelOutside = 0; levelPts = 0; strokes = [];
+  setPhase('ask');
+}
+
+function setPhase(p){
+  phase = p;
+  const part = lv.parts[step];
+  art.querySelectorAll('.part').forEach(g => {
+    const i = +g.dataset.i;
+    g.classList.toggle('locked', i > step);
+    g.classList.toggle('done', i < step || (i === step && p === 'story'));
+    g.classList.toggle('asking', i === step && p === 'ask');
+    g.classList.toggle('coloring', i === step && p === 'color');
+  });
+  $('#toolbar').hidden = p !== 'color';
+  $('#cardHint').hidden = true; $('#progWrap').hidden = p !== 'color'; $('#cardTimer').hidden = true;
+  const btn = $('#cardBtn'); btn.disabled = false; btn.hidden = false;
+  const who = mode === 'party' ? `${party.players[party.turn % party.players.length].name}’s turn` : `Part ${step+1} of ${lv.parts.length}`;
+  if(p === 'ask'){
+    $('#cardStage').textContent = 'Stage 1 of 2: Answer';
+    $('#cardEyebrow').textContent = who;
+    $('#cardTitle').textContent = mode === 'party' ? 'Get ready for your question' : 'Tap the glowing part';
+    $('#cardText').textContent = mode === 'party' ? 'The question is read out loud. When the yellow bar starts shrinking, you have 5 seconds!' : 'Listen to the question and pick the right answer to unlock your crayons.';
+    btn.textContent = `Hear question ${step+1}`;
+  } else if(p === 'color'){
+    $('#cardStage').textContent = 'Stage 2 of 2: Color';
+    $('#cardEyebrow').textContent = who;
+    $('#cardTitle').textContent = `Color the ${part.name.toLowerCase().replace(/^the /,'')}`;
+    $('#cardText').textContent = part.allow ? `Pick the ${listNames(part.allow)} crayon and color it all in. Stay inside the lines!` : 'Pick any crayons you like and color it all in. Stay inside the lines!';
+    $('#cardHint').textContent = part.color; $('#cardHint').hidden = mode === 'party';
+    btn.textContent = 'I’m done coloring';
+  } else if(p === 'story'){
+    $('#cardStage').textContent = 'Part complete!';
+    $('#cardEyebrow').textContent = `${part.sticker[0]} ${part.short}`;
+    $('#cardTitle').textContent = part.name;
+    $('#cardText').innerHTML = `${part.story}<span class="ref">${part.ref}</span>`;
+    btn.textContent = step < lv.parts.length - 1 ? 'Next part' : 'Finish level';
+  }
+  renderList(); updateUI();
+}
+
+function renderList(){
+  if(mode === 'party'){
+    $('#listTitle').textContent = 'Scoreboard';
+    const sorted = party.players.slice().sort((a,b) => b.score - a.score);
+    $('#plist').innerHTML = sorted.map((pl,i) => `<li class="done"><span class="n" style="background:${pl.color};color:#fff">${i+1}</span><span class="nm">${pl.name}</span><span style="margin-left:auto">${pl.score}</span></li>`).join('');
+    const cur = party.players[party.turn % party.players.length];
+    $('#partyBar').innerHTML = party.players.map(pl => `<span class="pchip ${pl===cur?'now':''}" style="--pc:${pl.color}"><i></i>${pl.name}: ${pl.score}</span>`).join('') + `<span class="pchip" style="--pc:var(--tile)">Turn ${Math.min(party.turn+1, party.total)} of ${party.total}</span>`;
+    return;
+  }
+  const doneCount = phase === 'story' ? step + 1 : step;
+  $('#plist').innerHTML = lv.parts.map((p,i) => `<li class="${i<doneCount?'done':''} ${i===step && phase!=='story'?'now':''}"><span class="n">${i<doneCount ? p.sticker[0] : i+1}</span><span class="nm">${i<doneCount ? p.short : '?'}</span></li>`).join('');
+}
+
+$('#cardBtn').addEventListener('click', () => {
+  if(phase === 'ask') ask();
+  else if(phase === 'color') mode === 'party' ? endPartyColor() : finishColoring();
+  else if(phase === 'story') nextPart();
+});
+
+/* questions */
+let curQ = null;
+function ask(){
+  const p = lv.parts[step], alt = mode === 'party' && party.alt;
+  const q = alt ? p.q2 : p.q, opts = alt ? p.opts2 : p.opts;
+  tried = false; answered = false;
+  $('#qTitle').textContent = mode === 'party' ? `${party.players[party.turn % party.players.length].name}, question ${party.turn+1}` : `Question ${step+1}`;
+  $('#qText').textContent = q;
+  $('#qFeedback').textContent = ''; $('#qFeedback').className = 'feedback';
+  const order = opts.map((o,i) => ({o, right:i===0})).sort(() => Math.random() - .5);
+  const box = $('#qOpts'); box.innerHTML = '';
+  order.forEach(({o,right},k) => {
+    const b = document.createElement('button'); b.className = 'opt'; b.dataset.right = right;
+    b.innerHTML = `<span class="letter">${'ABC'[k]}</span><span>${o}</span>`;
+    b.addEventListener('click', () => answer(b, right)); box.appendChild(b);
+  });
+  curQ = `${q} ${order.map((x,k) => `${'ABC'[k]}: ${x.o}.`).join(' ')}`;
+  $('#qTimer').hidden = mode !== 'party';
+  $('#qTimerBar').style.transform = 'scaleX(1)';
+  $('#qDialog').showModal();
+  speak(curQ, mode === 'party' ? startQTimer : null);
+}
+$('#hearBtn').addEventListener('click', () => speak(curQ));
+$('#qDialog').addEventListener('cancel', e => e.preventDefault());
+
+function startQTimer(){
+  if(answered || !$('#qDialog').open) return;
+  qLeft = 5; const t0 = performance.now();
+  clearInterval(qInt);
+  qInt = setInterval(() => {
+    qLeft = Math.max(0, 5 - (performance.now() - t0)/1000);
+    $('#qTimerBar').style.transform = `scaleX(${qLeft/5})`;
+    if(qLeft <= 0){ clearInterval(qInt); if(!answered) timeUp(); }
+  }, 80);
+}
+function revealRight(){ $('#qOpts').querySelectorAll('.opt').forEach(o => { o.disabled = true; if(o.dataset.right === 'true') o.classList.add('right'); }); }
+function timeUp(){
+  answered = true; revealRight(); SFX.wrong();
+  $('#qFeedback').textContent = 'Time’s up!'; $('#qFeedback').className = 'feedback warn';
+  speak('Time’s up!');
+  setTimeout(() => { $('#qDialog').close(); partyTurnEnd(0, 0, 'Time ran out on the question.'); }, 1800);
+}
+
+function answer(b, right){
+  if(answered) return;
+  const fb = $('#qFeedback');
+  if(right){
+    answered = true; clearInterval(qInt); SFX.right();
+    if(mode === 'party'){ answerPts = 100 + Math.round((qInt ? qLeft : 5) * 20); }
+    else { answerPts = tried ? 50 : 100; if(!tried) firstTry++; }
+    b.classList.add('right'); $('#qOpts').querySelectorAll('.opt').forEach(o => o.disabled = true);
+    fb.textContent = mode === 'party' ? `Correct! +${answerPts} points` : 'Well done, that’s correct!'; fb.className = 'feedback ok';
+    speak(mode === 'party' ? 'Correct!' : 'Well done! That’s correct!', () => { $('#qDialog').close(); enterColor(); });
+  } else {
+    SFX.wrong(); b.classList.remove('wrong'); void b.offsetWidth; b.classList.add('wrong'); b.disabled = true;
+    if(mode === 'party'){
+      answered = true; clearInterval(qInt); revealRight();
+      fb.textContent = 'Oh no, that’s not it.'; fb.className = 'feedback warn';
+      speak('Oh no, that’s not it.');
+      setTimeout(() => { $('#qDialog').close(); partyTurnEnd(0, 0, 'Wrong answer, so no coloring this turn.'); }, 2000);
+    } else {
+      tried = true;
+      fb.textContent = `Not quite. Hint: ${lv.parts[step].hint}`; fb.className = 'feedback warn';
+      speak(`Not quite. Try again. Here’s a hint. ${lv.parts[step].hint.replace(/Look at.*$/,'')}`);
+    }
+  }
+}
+
+/* coloring */
+function clearStrokes(i){ art.querySelector(`#part-${i} .strokes`).innerHTML = ''; }
+function enterColor(){
+  strokes = []; partOutside = 0; clearStrokes(step);
+  setPhase('color');
+  buildMask(step);
+  const tray = $('#tray'); tray.classList.remove('dump'); void tray.offsetWidth; tray.classList.add('dump');
+  zoomToPart(step);
+  if(window.innerWidth <= 860) $('#page').scrollIntoView({behavior: reduce ? 'auto' : 'smooth', block:'start'});
+  const part = lv.parts[step];
+  const line = part.allow ? `Pick the ${listNames(part.allow)} crayon.` : 'Pick any colors you like.';
+  if(mode === 'party') speak(`Color! ${line}`, startColorTimer);
+  else speak(`Now let’s color! ${line} Color the whole ${part.name.toLowerCase().replace(/^the /,'')}.`);
+}
+
+function buildMask(i){
+  const g = art.querySelector(`#part-${i}`);
+  const shapes = [...g.querySelectorAll('.fs')];
+  const bb = g.querySelector('.fills').getBBox();
+  const stepU = Math.max(bb.width, bb.height) / 56;
+  const cols = Math.ceil(bb.width / stepU) + 1, rows = Math.ceil(bb.height / stepU) + 1;
+  const root = art.getScreenCTM();
+  const mats = shapes.map(s => s.getScreenCTM().inverse().multiply(root));
+  const inside = new Uint8Array(cols * rows); let count = 0;
+  for(let r=0; r<rows; r++) for(let c=0; c<cols; c++){
+    const x = bb.x + c*stepU, y = bb.y + r*stepU;
+    for(let k=0; k<shapes.length; k++){
+      const p = new DOMPoint(x, y).matrixTransform(mats[k]);
+      if(shapes[k].isPointInFill(p)){ inside[r*cols+c] = 1; count++; break; }
+    }
+  }
+  mask = {x:bb.x, y:bb.y, step:stepU, cols, rows, inside, count: Math.max(1,count), covered:new Uint8Array(cols*rows), n:0};
+}
+function markDot(x, y, rad){
+  const m = mask, r = rad * 1.15;
+  const c0 = Math.max(0, Math.floor((x - r - m.x)/m.step)), c1 = Math.min(m.cols-1, Math.ceil((x + r - m.x)/m.step));
+  const r0 = Math.max(0, Math.floor((y - r - m.y)/m.step)), r1 = Math.min(m.rows-1, Math.ceil((y + r - m.y)/m.step));
+  for(let rr=r0; rr<=r1; rr++) for(let cc=c0; cc<=c1; cc++){
+    const idx = rr*m.cols+cc; if(!m.inside[idx] || m.covered[idx]) continue;
+    const dx = m.x + cc*m.step - x, dy = m.y + rr*m.step - y;
+    if(dx*dx + dy*dy <= r*r){ m.covered[idx] = 1; m.n++; }
+  }
+}
+function markSeg(a, b, rad){
+  const d = Math.hypot(b.x-a.x, b.y-a.y), n = Math.max(1, Math.ceil(d / (mask.step*.5)));
+  for(let k=1; k<=n; k++) markDot(a.x + (b.x-a.x)*k/n, a.y + (b.y-a.y)*k/n, rad);
+}
+function isOutside(x, y, rad){
+  const m = mask, r = rad*.4 + m.step;
+  const c0 = Math.max(0, Math.floor((x - r - m.x)/m.step)), c1 = Math.min(m.cols-1, Math.ceil((x + r - m.x)/m.step));
+  const r0 = Math.max(0, Math.floor((y - r - m.y)/m.step)), r1 = Math.min(m.rows-1, Math.ceil((y + r - m.y)/m.step));
+  if(c0 > c1 || r0 > r1) return true;
+  for(let rr=r0; rr<=r1; rr++) for(let cc=c0; cc<=c1; cc++) if(m.inside[rr*m.cols+cc]) return false;
+  return true;
+}
+function recompute(){
+  mask.covered.fill(0); mask.n = 0;
+  strokes.forEach(s => { if(s.counts){ markDot(s.pts[0].x, s.pts[0].y, s.r); for(let k=1;k<s.pts.length;k++) markSeg(s.pts[k-1], s.pts[k], s.r); } });
+}
+function coverage(){ return mask ? mask.n / mask.count : 0; }
+function updateUI(){
+  $('#undoBtn').disabled = !strokes.length;
+  if(phase !== 'color') return;
+  const pct = Math.min(100, Math.round(coverage()*100 / .9));
+  $('#progBar').style.width = pct + '%';
+  $('#progTxt').textContent = pct >= 100 ? 'All colored in!' : `Colored ${pct}%`;
+  if(mode === 'solo') $('#cardBtn').disabled = pct < 70;
+}
+
+function wrongColor(){
+  const part = lv.parts[step];
+  const now = Date.now(); if(now - lastWarn < 1200) return; lastWarn = now;
+  SFX.wrong();
+  toast(`No, that’s not right! ${part.why}`);
+  speak(`No, that’s not right! ${part.why} Pick the ${listNames(part.allow)} crayon.`);
+  document.querySelectorAll('#tray .crayon').forEach(c => { if(part.allow.includes(c.dataset.n)){ c.classList.remove('nudge'); void c.offsetWidth; c.classList.add('nudge'); } });
+}
+function warnOutside(){
+  partOutside++; levelOutside++;
+  const now = Date.now(); if(now - lastWarn < 1600) return; lastWarn = now;
+  SFX.wrong(); toast('Oops! Stay inside the lines.'); speak('Oops! Stay inside the lines.');
+}
+
+function toSvg(e){ const pt = art.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY; return pt.matrixTransform(art.getScreenCTM().inverse()); }
+
+art.addEventListener('pointerdown', e => {
+  if(phase === 'ask'){
+    if(mode === 'party') return;
+    const part = e.target.closest('.part');
+    if(part && +part.dataset.i === step) ask();
+    else toast(`Tap part ${step+1} first. It’s the glowing one!`);
+    return;
+  }
+  if(phase !== 'color') return;
+  const part = lv.parts[step];
+  e.preventDefault();
+  if(part.allow && !part.allow.includes(color.n)){ wrongColor(); return; }
+  art.setPointerCapture(e.pointerId);
+  const pt = toSvg(e), rad = SIZES[size] / art.getScreenCTM().a / 2;
+  const path = document.createElementNS(NS,'path');
+  path.setAttribute('fill','none'); path.setAttribute('stroke', color.v); path.setAttribute('stroke-opacity','.92');
+  path.setAttribute('stroke-width', rad*2); path.setAttribute('stroke-linecap','round'); path.setAttribute('stroke-linejoin','round');
+  drawing = {path, pts:[{x:pt.x, y:pt.y}], r:rad, d:`M${pt.x.toFixed(1)} ${pt.y.toFixed(1)} l0.01 0`, counts:true};
+  path.setAttribute('d', drawing.d);
+  art.querySelector(`#part-${step} .strokes`).appendChild(path);
+  if(isOutside(pt.x, pt.y, rad)) warnOutside(); else markDot(pt.x, pt.y, rad);
+  updateUI();
+});
+art.addEventListener('pointermove', e => {
+  if(!drawing) return;
+  const pt = toSvg(e), prev = drawing.pts[drawing.pts.length-1];
+  if(Math.hypot(pt.x-prev.x, pt.y-prev.y) < drawing.r*.25) return;
+  drawing.pts.push({x:pt.x, y:pt.y});
+  drawing.d += ` L${pt.x.toFixed(1)} ${pt.y.toFixed(1)}`; drawing.path.setAttribute('d', drawing.d);
+  if(isOutside(pt.x, pt.y, drawing.r)) warnOutside();
+  markSeg(prev, pt, drawing.r); updateUI();
+});
+function endStroke(){
+  if(!drawing) return;
+  strokes.push(drawing); drawing = null; updateUI();
+  if(coverage() >= .9){
+    if(mode === 'party') endPartyColor();
+    else { $('#cardBtn').disabled = false; speak('Beautiful! You colored it all in. Tap I’m done coloring.'); }
+  }
+}
+art.addEventListener('pointerup', endStroke); art.addEventListener('pointercancel', endStroke);
+
+function finishColoring(){
+  hush();
+  const part = lv.parts[step];
+  const neat = partOutside === 0 ? 25 : 0;
+  const pts = answerPts + 50 + neat;
+  levelPts += pts; store.points += pts; store.stickers[part.sticker[1]] = true;
+  if(mode === 'solo' && (key === 'statue' || key === 'beasts')){
+    store.art[key] = store.art[key] || {};
+    store.art[key][step] = strokes.map(st => ({d: st.path.getAttribute('d'), c: st.path.getAttribute('stroke'), w: +(+st.path.getAttribute('stroke-width')).toFixed(2)}));
+  }
+  persist();
+  setPhase('story'); animVB(vbFull);
+  const last = step === lv.parts.length - 1;
+  popup({ic:part.sticker[0], kind:'Sticker unlocked', title:`${part.sticker[1]} sticker`, text: neat ? 'Neat coloring bonus for staying inside the lines!' : 'Great coloring!', pts:`+${pts} points`,
+    say:`Great job! You earned the ${part.sticker[1]} sticker!`,
+    after:() => { speak(part.story); if(last && key === 'statue') statueFinale(); }});
+}
+function nextPart(){
+  hush();
+  if(step < lv.parts.length - 1){ step++; setPhase('ask'); speak(`Part ${step+1}. Tap the glowing part.`); }
+  else showEnding();
+}
+
+/* zoom */
+function zoomToPart(i){
+  const bb = art.querySelector(`#part-${i} .fills`).getBBox();
+  const [, , W, H] = vbFull;
+  const pad = Math.max(bb.width, bb.height) * .22 + 6;
+  const w = Math.max(bb.width + pad*2, W*.3), h = Math.max(bb.height + pad*2, H*.3);
+  animVB([bb.x + bb.width/2 - w/2, bb.y + bb.height/2 - h/2, w, h]);
+}
+function animVB(to){
+  cancelAnimationFrame(vbAnim);
+  const from = vbCur.slice(), t0 = performance.now(), dur = reduce ? 1 : 650;
+  (function f(now){
+    const p = Math.min(1,(now - t0)/dur), e = p < .5 ? 2*p*p : 1 - Math.pow(-2*p + 2, 2)/2;
+    vbCur = from.map((v,k) => v + (to[k]-v)*e);
+    art.setAttribute('viewBox', vbCur.join(' '));
+    if(p < 1) vbAnim = requestAnimationFrame(f);
+  })(t0);
+}
+
+/* statue finale */
+function statueFinale(){
+  const w = reduce ? 0 : 1; $('#cardBtn').disabled = true;
+  setTimeout(() => {
+    art.querySelector('#stoneWrap').style.transform = 'translate(-108px, 486px)';
+    setTimeout(() => {
+      art.querySelector('#statue').classList.add('shake'); if(!reduce) dust();
+      setTimeout(() => {
+        art.querySelector('#statue').style.opacity = '.12'; art.querySelector('#stoneWrap').style.opacity = '0';
+        art.querySelector('#mountain').classList.add('grow');
+        setTimeout(() => $('#cardBtn').disabled = false, 1400 * w);
+      }, 900 * w);
+    }, 1150 * w);
+  }, 600 * w);
+}
+function dust(){
+  const layer = art.querySelector('#dust'), cols = ['#E2A72E','#C5CCD8','#B06A2C','#5C6670','#B9784C'];
+  for(let i=0;i<70;i++){
+    const c = document.createElementNS(NS,'circle'), x = 80 + Math.random()*140, y = 20 + Math.random()*530;
+    c.setAttribute('cx',x); c.setAttribute('cy',y); c.setAttribute('r', 1.5 + Math.random()*3); c.setAttribute('fill', cols[Math.min(4, Math.floor(y/110))]);
+    layer.appendChild(c);
+    c.animate([{transform:'translate(0,0)',opacity:1},{transform:`translate(${140+Math.random()*200}px,${-60-Math.random()*120}px)`,opacity:0}],
+      {duration:1600+Math.random()*900, delay:Math.random()*400, easing:'ease-out', fill:'forwards'}).onfinish = () => c.remove();
+  }
+}
+
+/* solo ending */
+function showEnding(){
+  const n = lv.parts.length, stars = firstTry === n ? 3 : firstTry >= n - 2 ? 2 : 1;
+  store.stars[key] = Math.max(store.stars[key] || 0, stars); persist();
+  $('#endTitle').textContent = lv.ending.title;
+  $('#endStars').innerHTML = starHTML(stars);
+  $('#endQuote').innerHTML = `${lv.ending.quote}<b>${lv.ending.ref}</b>`;
+  $('#endText').textContent = `You answered ${firstTry} of ${n} questions on the first try and scored ${levelPts} points. ${lv.ending.text}`;
+  $('#tlBtn').hidden = !(key === 'statue' || key === 'beasts');
+  $('#ending').hidden = false; $('#againBtn').focus();
+  speak(`${lv.ending.title}! ${lv.ending.text}`);
+  award(key);
+  if(firstTry === n) award('wise');
+  if(levelOutside === 0) award('lines');
+  if(store.trophies.statue && store.trophies.beasts && store.trophies.sanctuary) award('champ');
+}
+$('#againBtn').addEventListener('click', () => { $('#ending').hidden = true; hush(); startLevel(); setPhase('ask'); });
+$('#homeBtn').addEventListener('click', () => { $('#ending').hidden = true; goHome(); });
+
+/* ---------------- party race ---------------- */
+function openPartySetup(){
+  const prev = (store.lastPlayers || ['','','','']);
+  $('#playerInputs').innerHTML = PLAYER_COLORS.map((c,i) => `<label style="--pc:${c}"><i></i><input maxlength="14" placeholder="Player ${i+1}${i>1?' (optional)':''}" value="${(prev[i]||'').replace(/"/g,'')}" aria-label="Player ${i+1} name"></label>`).join('');
+  $('#history').innerHTML = store.history.length ? store.history.slice(0,6).map(h => `<li>🏆 ${h.winner} won with ${h.top} points · ${h.players}</li>`).join('') : '<li>No races yet. Be the first!</li>';
+  show('partySetup');
+}
+$('#partyStart').addEventListener('click', () => {
+  const names = [...document.querySelectorAll('#playerInputs input')].map(i => i.value.trim());
+  const players = names.map((n,i) => n ? {name:n, score:0, color:PLAYER_COLORS[i]} : null).filter(Boolean);
+  if(players.length < 2){ toast('Type at least two names to start a race.'); return; }
+  store.lastPlayers = names; persist();
+  mode = 'party'; key = 'statue'; lv = LEVELS.statue;
+  party = {players, turn:0, total: players.length * 3, alt:false};
+  $('#lvlTitle').textContent = 'Party race: Daniel 2'; $('#partyBar').hidden = false;
+  show('level');
+  renderArt(lv, art, true); vbFull = lv.viewBox.split(' ').map(Number); vbCur = vbFull.slice(); strokes = [];
+  step = 0; setPhase('ask'); nextTurn();
+});
+function nextTurn(){
+  if(party.turn >= party.total){ partyEnd(); return; }
+  const pl = party.players[party.turn % party.players.length];
+  step = party.turn % lv.parts.length; party.alt = party.turn >= lv.parts.length;
+  setPhase('ask');
+  $('#turnTitle').textContent = `${pl.name}’s turn!`;
+  $('#turnText').textContent = `Pass the device to ${pl.name}. You’ll hear a question, then you have 5 seconds to answer.`;
+  $('#turnBoard').innerHTML = '';
+  $('#turnBtn').textContent = 'I’m ready!';
+  $('#turnBox').hidden = false; $('#turnBtn').focus();
+  speak(`${pl.name}, it’s your turn!`);
+  $('#turnBtn').onclick = () => { $('#turnBox').hidden = true; hush(); ask(); };
+}
+function startColorTimer(){
+  if(phase !== 'color') return;
+  let left = 10; const t = $('#cardTimer'); t.hidden = false; t.textContent = left; t.classList.remove('low');
+  clearInterval(cInt);
+  cInt = setInterval(() => { left--; t.textContent = Math.max(0,left); t.classList.toggle('low', left <= 3); if(left <= 3 && left > 0) SFX.tick(); if(left <= 0) endPartyColor(); }, 1000);
+}
+function endPartyColor(){
+  if(phase !== 'color') return;
+  clearInterval(cInt); drawing = null;
+  const colorPts = Math.round(Math.min(1, coverage()/.9) * 100);
+  phase = 'story'; animVB(vbFull);
+  partyTurnEnd(answerPts, colorPts, '');
+}
+function partyTurnEnd(aPts, cPts, note){
+  stopTimers();
+  const pl = party.players[party.turn % party.players.length];
+  const total = aPts + cPts; pl.score += total;
+  party.turn++;
+  setPhase('ask'); $('#cardBtn').hidden = true;
+  const sorted = party.players.slice().sort((a,b) => b.score - a.score);
+  $('#turnTitle').textContent = total ? `+${total} points for ${pl.name}!` : `No points this time, ${pl.name}`;
+  $('#turnText').textContent = note || `Answer: ${aPts} points. Coloring: ${cPts} points.`;
+  $('#turnBoard').innerHTML = sorted.map(p => `<li><span class="medal" style="color:${p.color}">●</span><span>${p.name}</span><span>${p.score}</span></li>`).join('');
+  $('#turnBtn').textContent = party.turn >= party.total ? 'See who won' : 'Next player';
+  $('#turnBox').hidden = false; $('#turnBtn').focus();
+  if(total) SFX.sticker();
+  speak(total ? `${total} points for ${pl.name}!` : `No points this time.`);
+  $('#turnBtn').onclick = () => { $('#turnBox').hidden = true; hush(); nextTurn(); };
+}
+function partyEnd(){
+  const sorted = party.players.slice().sort((a,b) => b.score - a.score);
+  const win = sorted[0], tie = sorted[1] && sorted[1].score === win.score;
+  const medals = ['🥇','🥈','🥉','🎖️'];
+  store.history.unshift({winner: tie ? 'A tie' : win.name, top: win.score, players: sorted.map(p => `${p.name} ${p.score}`).join(', ')});
+  store.history = store.history.slice(0,10); persist();
+  $('#turnTitle').textContent = tie ? 'It’s a tie!' : `${win.name} wins the race!`;
+  $('#turnText').textContent = 'Final scoreboard';
+  $('#turnBoard').innerHTML = sorted.map((p,i) => `<li><span class="medal">${medals[i]}</span><span>${p.name}</span><span>${p.score}</span></li>`).join('');
+  $('#turnBtn').textContent = 'Back to levels';
+  $('#turnBox').hidden = false;
+  $('#turnBtn').onclick = () => { $('#turnBox').hidden = true; goHome(); };
+  if(!tie) popup({ic:'🏆', kind:'Race champion', title:`${win.name} wins!`, text:`${win.score} points. Great answering and great coloring!`, big:true, say:`${win.name} wins the race! Congratulations!`});
+  award('party');
+}
+
+/* ---------------- prophecy timeline ---------------- */
+const CROPS = {
+  statue:['110 8 80 130','56 116 190 196','92 226 116 152','100 366 100 160','86 512 128 46','226 16 64 60'],
+  beasts:['0 428 400 92','8 20 186 182','204 64 182 138','20 254 182 152','200 266 204 142']
+};
+const TL = [
+  {k:'Babylon', yrs:'605–539 BC', s:0, b:1, say:'The head of gold and the lion with eagle’s wings are the same kingdom: Babylon!'},
+  {k:'Medo-Persia', yrs:'539–331 BC', s:1, b:2, say:'The silver chest and arms and the bear with three ribs are the same kingdom: Medo-Persia!'},
+  {k:'Greece', yrs:'331–168 BC', s:2, b:3, say:'The bronze belly and the leopard with four heads are the same kingdom: Greece!'},
+  {k:'Rome', yrs:'168 BC – AD 476', s:3, b:4, say:'The iron legs and the terrible beast with iron teeth are the same kingdom: Rome!'},
+  {k:'Divided nations', yrs:'AD 476 – today', s:4, b:4, bvb:'204 268 64 44', bcap:'Ten horns', say:'The ten toes of iron and clay and the ten horns are the nations Rome broke into. They still can’t stick together today.'},
+  {k:'God’s kingdom', yrs:'Forever!', s:5, b:'clouds', say:'The stone that fills the whole earth and Jesus coming in the clouds are God’s kingdom. Jesus is coming again, and His kingdom lasts forever!'}
+];
+let tlUid = 0, tlPlaying = false;
+function hasArt(k, i){ return !!(store.art[k] && store.art[k][i]); }
+function rowMatched(r){ return hasArt('statue', r.s) && (r.b === 'clouds' ? !!store.stars.beasts : hasArt('beasts', r.b)); }
+function tlMatched(){ return TL.filter(rowMatched).length; }
+function miniArt(k, i, vb){
+  const p = LEVELS[k].parts[i], saved = (store.art[k] || {})[i], id = 'tlc' + (tlUid++);
+  const paths = (saved || []).map(st => `<path d="${st.d}" stroke="${st.c}" stroke-width="${st.w}" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-opacity=".92"/>`).join('');
+  return `<svg xmlns="${NS}" viewBox="${vb}" preserveAspectRatio="xMidYMid meet" aria-hidden="true"><defs><clipPath id="${id}">${p.shapes}</clipPath></defs><g class="tfill">${p.shapes}</g><g clip-path="url(#${id})">${paths}</g><g class="tlines">${p.shapes}${p.deco||''}</g></svg>`;
+}
+const CLOUDS = `<svg xmlns="${NS}" viewBox="0 0 140 90" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+  <rect x="2" y="2" width="136" height="86" rx="12" fill="#DCEBFF"/>
+  <g stroke="#F2C14E" stroke-width="3" stroke-linecap="round"><path d="M70 10 V22 M44 18 L52 28 M96 18 L88 28 M30 36 H42 M110 36 H98"/></g>
+  <circle cx="70" cy="40" r="13" fill="#FFE08A" stroke="#1F2A4A" stroke-width="2"/>
+  <g fill="#FFFFFF" stroke="#1F2A4A" stroke-width="2"><ellipse cx="40" cy="64" rx="24" ry="13"/><ellipse cx="64" cy="58" rx="22" ry="15"/><ellipse cx="94" cy="62" rx="26" ry="14"/><ellipse cx="70" cy="70" rx="40" ry="11"/></g>
+</svg>`;
+function artCell(k, i, vb, cap, lockMsg){
+  if(i === 'clouds'){
+    const open = !!store.stars.beasts;
+    return `<div class="tl-art ${open?'':'locked'}"><span class="cap">Son of man in the clouds</span>${CLOUDS}${open?'':`<span class="lock">🔒 ${lockMsg}</span>`}</div>`;
+  }
+  const has = hasArt(k, i);
+  return `<div class="tl-art ${has?'':'locked'}">${cap?`<span class="cap">${cap}</span>`:''}${miniArt(k, i, vb)}${has?'':`<span class="lock">🔒 ${lockMsg}</span>`}</div>`;
+}
+function openTimeline(){
+  hush(); tlPlaying = false;
+  $('#tlRows').innerHTML = TL.map((r,i) => `<div class="tl-row ${rowMatched(r)?'matched':''}" style="--i:${i}" data-r="${i}">
+      ${artCell('statue', r.s, CROPS.statue[r.s], '', 'Color it in Daniel 2')}
+      <div class="tl-mid"><b>${r.k}</b><small>${r.yrs}</small><span class="same">${rowMatched(r) ? '◀ same kingdom ▶' : 'not matched yet'}</span></div>
+      ${artCell('beasts', r.b, r.bvb || CROPS.beasts[r.b], r.bcap || '', 'Color it in Daniel 7')}
+    </div>`).join('');
+  const m = tlMatched();
+  $('#tlProgress').textContent = m === 6 ? 'You matched all 6 kingdoms! Daniel 2 and Daniel 7 tell the same story.' :
+    `${m} of 6 kingdoms matched. ${!store.stars.statue ? 'Color Daniel’s Dream Statue to fill the left side.' : !store.stars.beasts ? 'Now color Four Beasts from the Sea to fill the right side!' : 'Color the missing parts to finish your timeline.'}`;
+  show('timeline');
+  if(m === 6) award('timeline');
+  speak(m === 6 ? 'Look! Your statue and your beasts tell the same story. Tap play the story to hear it.' : $('#tlProgress').textContent);
+}
+$('#tlPlay').addEventListener('click', () => {
+  if(tlPlaying){ tlPlaying = false; hush(); document.querySelectorAll('.tl-row').forEach(r => r.classList.remove('playing')); $('#tlPlay').textContent = '▶ Play the story'; return; }
+  tlPlaying = true; $('#tlPlay').textContent = '■ Stop';
+  let i = 0;
+  (function next(){
+    document.querySelectorAll('.tl-row').forEach(r => r.classList.remove('playing'));
+    if(!tlPlaying || i >= TL.length){ tlPlaying = false; $('#tlPlay').textContent = '▶ Play the story'; return; }
+    const row = document.querySelector(`.tl-row[data-r="${i}"]`); row.classList.add('playing');
+    row.scrollIntoView({behavior: reduce ? 'auto' : 'smooth', block:'center'});
+    const r = TL[i++]; speak(`${r.k}. ${r.say}`, () => setTimeout(next, 400));
+  })();
+});
+$('#tlBtn').addEventListener('click', () => { $('#ending').hidden = true; openTimeline(); });
+
+/* ---------------- draw it ---------------- */
+const pad = $('#pad'), ctx = pad.getContext('2d');
+let dColor = PALETTE[0], dSize = 1, dDraw = null, word = '', peek = false, timerId = 0, left = 60, points = 0;
+buildTray($('#tray2'), $('#colorName2'), c => dColor = c);
+bindSizes($('#sizes2'), s => dSize = s);
+function sizePad(){
+  const r = pad.getBoundingClientRect(), dpr = window.devicePixelRatio || 1;
+  pad.width = r.width * dpr; pad.height = r.height * dpr;
+  ctx.setTransform(dpr,0,0,dpr,0,0); ctx.fillStyle = '#FFFFFF'; ctx.fillRect(0,0,r.width,r.height);
+  ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+}
+function padPt(e){ const r = pad.getBoundingClientRect(); return {x:e.clientX - r.left, y:e.clientY - r.top}; }
+pad.addEventListener('pointerdown', e => {
+  pad.setPointerCapture(e.pointerId); dDraw = padPt(e);
+  ctx.strokeStyle = dColor.v; ctx.lineWidth = SIZES[dSize] * .7;
+  ctx.beginPath(); ctx.moveTo(dDraw.x, dDraw.y); ctx.lineTo(dDraw.x + .01, dDraw.y); ctx.stroke();
+});
+pad.addEventListener('pointermove', e => { if(!dDraw) return; const p = padPt(e); ctx.beginPath(); ctx.moveTo(dDraw.x, dDraw.y); ctx.lineTo(p.x, p.y); ctx.stroke(); dDraw = p; });
+['pointerup','pointercancel'].forEach(ev => pad.addEventListener(ev, () => dDraw = null));
+$('#clearBtn').addEventListener('click', sizePad);
+function newWord(){
+  let w; do { w = DRAW_WORDS[Math.floor(Math.random()*DRAW_WORDS.length)]; } while(w === word);
+  word = w; peek = false; renderSecret(); clearInterval(timerId); timerId = 0; left = 60; renderTimer();
+  $('#gotBtn').disabled = true; $('#goBtn').disabled = false; sizePad();
+}
+function renderSecret(){ const s = $('#secret'); s.textContent = peek ? word : 'Tap to see your secret word'; s.classList.toggle('hidden-word', !peek); }
+$('#secret').addEventListener('click', () => { peek = !peek; renderSecret(); });
+function renderTimer(){ $('#timer').textContent = left; $('#timer').classList.toggle('low', left <= 10); }
+$('#goBtn').addEventListener('click', () => {
+  peek = false; renderSecret(); $('#goBtn').disabled = true; $('#gotBtn').disabled = false; left = 60; renderTimer(); speak('Go! Start drawing!');
+  timerId = setInterval(() => { left--; renderTimer(); if(left <= 0){ clearInterval(timerId); timerId = 0; $('#gotBtn').disabled = true; SFX.wrong(); toast(`Time’s up! The word was “${word}”.`); speak(`Time’s up! The word was ${word}.`); } }, 1000);
+});
+$('#gotBtn').addEventListener('click', () => { clearInterval(timerId); timerId = 0; points++; $('#score').textContent = `Points: ${points}`; SFX.right(); toast(`Yes! It was “${word}”.`); speak(`Yes! It was ${word}!`); setTimeout(newWord, 1500); });
+$('#newBtn').addEventListener('click', newWord);
+function openDraw(){ show('draw'); requestAnimationFrame(newWord); }
+window.addEventListener('resize', () => { if(!$('#draw').hidden && !timerId) sizePad(); });
+
+renderHome();
+</script>
+</body>
+</html>
